@@ -1169,16 +1169,12 @@ app.get('/espace-etudiant', (c) => {
                     <a href="/espace-etudiant" class="nav-link">Mon Espace</a>
                     <a href="/qcm" class="nav-link">QH</a>
                     <a href="/faq" class="nav-link">FAQ</a>
-                    <div class="profile-menu" id="profile-menu">
-                        <button class="profile-btn" id="profile-btn" onclick="window.toggleProfileMenu && window.toggleProfileMenu(event)">
-                            <i class="fas fa-user-circle"></i>
-                            <span id="user-name">Profil</span>
-                            <i class="fas fa-chevron-down" id="chevron-icon"></i>
-                        </button>
-                        <div class="profile-dropdown" id="profile-dropdown">
-                            <!-- Contenu dynamique chargé par header-init.js -->
-                        </div>
-                    </div>
+                    <span class="nav-link" id="user-name-display" style="color: var(--teal-primary); font-weight: 600;">
+                        <i class="fas fa-user-circle"></i> <span id="user-name">Profil</span>
+                    </span>
+                    <a href="#" class="nav-link" onclick="logout(); return false;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </a>
                 </nav>
             </div>
         </header>
@@ -1301,16 +1297,12 @@ app.get('/dashboard-enseignant', (c) => {
                     <a href="/dashboard-enseignant" class="nav-link">Mes QCM</a>
                     <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
                     <a href="/" class="nav-link">Accueil</a>
-                    <div class="profile-menu" id="profile-menu">
-                        <button class="profile-btn" id="profile-btn" onclick="window.toggleProfileMenu && window.toggleProfileMenu(event)">
-                            <i class="fas fa-user-circle"></i>
-                            <span id="user-name">Profil</span>
-                            <i class="fas fa-chevron-down" id="chevron-icon"></i>
-                        </button>
-                        <div class="profile-dropdown" id="profile-dropdown">
-                            <!-- Contenu dynamique chargé par header-init.js -->
-                        </div>
-                    </div>
+                    <span class="nav-link" id="user-name-display" style="color: var(--teal-primary); font-weight: 600;">
+                        <i class="fas fa-user-circle"></i> <span id="user-name">Profil</span>
+                    </span>
+                    <a href="#" class="nav-link" onclick="logout(); return false;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </a>
                 </nav>
             </div>
         </header>
@@ -1364,16 +1356,12 @@ app.get('/creer-qcm', (c) => {
                     <a href="/dashboard-enseignant" class="nav-link">Mes QCM</a>
                     <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
                     <a href="/" class="nav-link">Accueil</a>
-                    <div class="profile-menu" id="profile-menu">
-                        <button class="profile-btn" id="profile-btn" onclick="window.toggleProfileMenu && window.toggleProfileMenu(event)">
-                            <i class="fas fa-user-circle"></i>
-                            <span id="user-name">Profil</span>
-                            <i class="fas fa-chevron-down" id="chevron-icon"></i>
-                        </button>
-                        <div class="profile-dropdown" id="profile-dropdown">
-                            <!-- Contenu dynamique chargé par header-init.js -->
-                        </div>
-                    </div>
+                    <span class="nav-link" id="user-name-display" style="color: var(--teal-primary); font-weight: 600;">
+                        <i class="fas fa-user-circle"></i> <span id="user-name">Profil</span>
+                    </span>
+                    <a href="#" class="nav-link" onclick="logout(); return false;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </a>
                 </nav>
             </div>
         </header>
