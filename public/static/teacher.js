@@ -259,16 +259,6 @@ function updateAnswerInputs(index) {
     `;
   }
 }
-        <option value="">Sélectionner...</option>
-        <option value="A">A</option>
-        <option value="B">B</option>
-        <option value="C">C</option>
-        <option value="D">D</option>
-        <option value="E">E</option>
-      </select>
-    `;
-  }
-}
 
 function removeQuestion(index) {
   const questionItem = document.querySelector(`[data-index="${index}"]`);
