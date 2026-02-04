@@ -700,22 +700,6 @@ function updateHeaderForLoggedInUser(user) {
     
     connexionBtn.parentElement.innerHTML = profileHtml;
     
-    // Gérer le clic sur le bouton profil
-    const profileBtn = document.getElementById('profile-btn');
-    const profileDropdown = document.getElementById('profile-dropdown');
-    
-    if (profileBtn && profileDropdown) {
-      profileBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        profileDropdown.classList.toggle('active');
-      });
-      
-      // Fermer le dropdown en cliquant ailleurs
-      document.addEventListener('click', (e) => {
-        if (!profileDropdown.contains(e.target) && e.target !== profileBtn) {
-          profileDropdown.classList.remove('active');
-        }
-      });
-    }
+    // Le menu profil est maintenant géré par header-init.js
   }
 }

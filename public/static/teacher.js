@@ -497,27 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Initialiser le menu déroulant
-    const profileBtn = document.getElementById('profile-btn');
-    const profileDropdown = document.getElementById('profile-dropdown');
-    const chevronIcon = document.getElementById('chevron-icon');
-    
-    if (profileBtn && profileDropdown) {
-      profileBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        profileDropdown.classList.toggle('show');
-        if (chevronIcon) {
-          chevronIcon.style.transform = profileDropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
-        }
-      });
-      
-      // Fermer au clic à l'extérieur
-      document.addEventListener('click', () => {
-        profileDropdown.classList.remove('show');
-        if (chevronIcon) {
-          chevronIcon.style.transform = 'rotate(0deg)';
-        }
-      });
-    }
+    // Le menu profil est maintenant géré par header-init.js
   }
   
   // Dashboard enseignant

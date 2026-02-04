@@ -2,6 +2,13 @@
 (function() {
   'use strict';
   
+  // Flag pour éviter l'initialisation multiple
+  if (window.headerInitialized) {
+    console.log('⚠️ Header déjà initialisé, skip');
+    return;
+  }
+  window.headerInitialized = true;
+  
   // Fonction pour vérifier l'authentification
   function checkAuth() {
     const token = localStorage.getItem('token');
@@ -23,15 +30,25 @@
   function initializeHeader() {
     const user = checkAuth();
     
+    console.log('🔍 Initialisation du header, utilisateur:', user);
+    
     // Mettre à jour le bouton profil
     const userName = document.getElementById('user-name');
     const profileBtn = document.getElementById('profile-btn');
     const profileDropdown = document.getElementById('profile-dropdown');
     const chevronIcon = document.getElementById('chevron-icon');
     
+    console.log('🔍 Éléments trouvés:', {
+      userName: !!userName,
+      profileBtn: !!profileBtn,
+      profileDropdown: !!profileDropdown,
+      chevronIcon: !!chevronIcon
+    });
+    
     if (user && userName) {
       // Afficher le prénom de l'utilisateur
       userName.textContent = user.prenom || user.nom || 'Profil';
+      console.log('✅ Nom utilisateur affiché:', userName.textContent);
       
       // Mettre à jour le contenu du dropdown selon le rôle
       if (profileDropdown) {
@@ -69,12 +86,16 @@
     
     // Initialiser le menu déroulant
     if (profileBtn && profileDropdown) {
+      console.log('✅ Initialisation du menu déroulant');
+      
       // Gérer le clic sur le bouton
       profileBtn.addEventListener('click', function(e) {
+        console.log('🖱️ Clic sur le bouton profil détecté !');
         e.preventDefault();
         e.stopPropagation();
         
         const isOpen = profileDropdown.classList.contains('show');
+        console.log('📊 État actuel du menu:', isOpen ? 'ouvert' : 'fermé');
         
         // Fermer tous les autres dropdowns
         document.querySelectorAll('.profile-dropdown').forEach(dropdown => {
@@ -85,6 +106,7 @@
         
         // Toggle ce dropdown
         profileDropdown.classList.toggle('show');
+        console.log('📊 Nouveau état:', profileDropdown.classList.contains('show') ? 'ouvert' : 'fermé');
         
         // Animer le chevron
         if (chevronIcon) {
@@ -107,6 +129,11 @@
       // Empêcher la fermeture lors du clic sur le dropdown lui-même
       profileDropdown.addEventListener('click', function(e) {
         e.stopPropagation();
+      });
+    } else {
+      console.warn('⚠️ Éléments du menu profil non trouvés:', {
+        profileBtn: !!profileBtn,
+        profileDropdown: !!profileDropdown
       });
     }
   }
