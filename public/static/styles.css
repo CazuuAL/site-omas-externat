@@ -1564,6 +1564,7 @@ body {
 /* Profile Menu Styles */
 .profile-menu {
   position: relative;
+  display: inline-block;
 }
 
 .profile-btn {
@@ -1578,6 +1579,7 @@ body {
   transition: all 0.2s;
   color: var(--gray-dark);
   font-size: 1rem;
+  font-family: inherit;
 }
 
 .profile-btn:hover {
@@ -1590,15 +1592,19 @@ body {
   color: var(--teal-primary);
 }
 
-.profile-btn #user-name {
+.profile-btn #user-name,
+.profile-btn span {
   font-weight: 600;
   color: var(--gray-dark);
+  white-space: nowrap;
 }
 
-.profile-btn #chevron-icon {
+.profile-btn #chevron-icon,
+.profile-btn i.fa-chevron-down {
   font-size: 0.75rem;
   transition: transform 0.2s;
   color: var(--gray-dark);
+  margin-left: auto;
 }
 
 .profile-dropdown {
@@ -1608,14 +1614,14 @@ body {
   background: var(--white);
   border: 1px solid var(--gray-light);
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 220px;
   padding: 0.5rem 0;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-10px);
-  transition: all 0.2s;
-  z-index: 1000;
+  transition: all 0.2s ease-in-out;
+  z-index: 9999;
 }
 
 .profile-dropdown.show {
@@ -1632,6 +1638,13 @@ body {
   color: var(--gray-dark);
   text-decoration: none;
   transition: background 0.2s;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 1rem;
 }
 
 .dropdown-item:hover {
@@ -1641,6 +1654,7 @@ body {
 .dropdown-item i {
   color: var(--teal-primary);
   width: 20px;
+  font-size: 1rem;
 }
 
 .dropdown-divider {

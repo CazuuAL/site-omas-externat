@@ -1302,10 +1302,10 @@ app.get('/dashboard-enseignant', (c) => {
                     <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
                     <a href="/" class="nav-link">Accueil</a>
                     <div class="profile-menu" id="profile-menu">
-                        <button class="profile-btn" id="profile-btn" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid var(--gray-light); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
-                            <span id="user-name" style="font-weight: 600;">Profil</span>
-                            <i class="fas fa-chevron-down" id="chevron-icon" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+                        <button class="profile-btn" id="profile-btn">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="user-name">Profil</span>
+                            <i class="fas fa-chevron-down" id="chevron-icon"></i>
                         </button>
                         <div class="profile-dropdown" id="profile-dropdown">
                             <a href="/dashboard-enseignant" class="dropdown-item">
@@ -1370,10 +1370,10 @@ app.get('/creer-qcm', (c) => {
                     <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
                     <a href="/" class="nav-link">Accueil</a>
                     <div class="profile-menu" id="profile-menu">
-                        <button class="profile-btn" id="profile-btn" style="display: flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid var(--gray-light); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
-                            <span id="user-name" style="font-weight: 600;">Profil</span>
-                            <i class="fas fa-chevron-down" id="chevron-icon" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+                        <button class="profile-btn" id="profile-btn">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="user-name">Profil</span>
+                            <i class="fas fa-chevron-down" id="chevron-icon"></i>
                         </button>
                         <div class="profile-dropdown" id="profile-dropdown">
                             <a href="/dashboard-enseignant" class="dropdown-item">
