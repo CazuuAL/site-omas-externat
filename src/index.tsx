@@ -189,6 +189,42 @@ app.post('/api/qcm/:id/answer', async (c) => {
   }
 })
 
+// API - Sauvegarder la progression d'un QCM
+app.post('/api/qcm/save-progress', async (c) => {
+  try {
+    const { user_id, qcm_id, score, total_questions, correct_answers, completed } = await c.req.json()
+    const { DB } = c.env
+
+    // Vérifier si une entrée existe déjà pour cet utilisateur et ce QCM
+    const existing = await DB.prepare(`
+      SELECT id FROM student_progress 
+      WHERE user_id = ? AND qcm_id = ?
+    `).bind(user_id, qcm_id).first()
+
+    if (existing) {
+      // Mettre à jour l'entrée existante
+      await DB.prepare(`
+        UPDATE student_progress 
+        SET score = ?, total_questions = ?, correct_answers = ?, 
+            completed = ?, completed_at = CURRENT_TIMESTAMP
+        WHERE user_id = ? AND qcm_id = ?
+      `).bind(score, total_questions, correct_answers, completed, user_id, qcm_id).run()
+    } else {
+      // Créer une nouvelle entrée
+      await DB.prepare(`
+        INSERT INTO student_progress 
+        (user_id, qcm_id, score, total_questions, correct_answers, completed, completed_at)
+        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      `).bind(user_id, qcm_id, score, total_questions, correct_answers, completed).run()
+    }
+
+    return c.json({ success: true, message: 'Progression enregistrée' })
+  } catch (error) {
+    console.error('Erreur sauvegarde progression:', error)
+    return c.json({ error: 'Erreur lors de la sauvegarde' }, 500)
+  }
+})
+
 // API - Progression de l'étudiant
 app.get('/api/student/:userId/progress', async (c) => {
   try {
@@ -211,6 +247,51 @@ app.get('/api/student/:userId/progress', async (c) => {
   } catch (error) {
     console.error('Erreur progression:', error)
     return c.json({ error: 'Erreur lors du chargement de la progression' }, 500)
+  }
+})
+
+// API - Statistiques par matière pour un étudiant
+app.get('/api/student/:userId/stats', async (c) => {
+  try {
+    const userId = c.req.param('userId')
+    const { DB } = c.env
+
+    // Récupérer les stats par spécialité
+    const stats = await DB.prepare(`
+      SELECT 
+        q.specialite,
+        COUNT(DISTINCT sp.qcm_id) as nb_qcm_faits,
+        AVG(sp.score) as score_moyen,
+        SUM(sp.correct_answers) as total_correct,
+        SUM(sp.total_questions) as total_questions
+      FROM student_progress sp
+      JOIN qcm_weekly q ON sp.qcm_id = q.id
+      WHERE sp.user_id = ? AND sp.completed = 1
+      GROUP BY q.specialite
+      ORDER BY q.specialite
+    `).bind(userId).all()
+
+    // Récupérer les derniers QCM complétés
+    const recentQcms = await DB.prepare(`
+      SELECT 
+        sp.*,
+        q.titre,
+        q.specialite,
+        q.semaine
+      FROM student_progress sp
+      JOIN qcm_weekly q ON sp.qcm_id = q.id
+      WHERE sp.user_id = ? AND sp.completed = 1
+      ORDER BY sp.completed_at DESC
+      LIMIT 10
+    `).bind(userId).all()
+
+    return c.json({ 
+      stats: stats.results,
+      recentQcms: recentQcms.results 
+    })
+  } catch (error) {
+    console.error('Erreur stats:', error)
+    return c.json({ error: 'Erreur lors du chargement des statistiques' }, 500)
   }
 })
 
@@ -1000,6 +1081,144 @@ app.get('/qcm/:id', async (c) => {
                 loadQCM(${qcmId});
             });
         </script>
+    </body>
+    </html>
+  `)
+})
+
+// Page Dashboard Étudiant
+app.get('/espace-etudiant', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mon Espace - OMAS Externat</title>
+        <link href="/static/styles.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    </head>
+    <body>
+        <header class="header">
+            <div class="header-content">
+                <a href="/" class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="logo-text">OMAS Externat</span>
+                </a>
+                <nav class="nav-menu">
+                    <a href="/espace-etudiant" class="nav-link">Mon Espace</a>
+                    <a href="/qcm" class="nav-link">QH</a>
+                    <a href="/faq" class="nav-link">FAQ</a>
+                    <div class="profile-menu" id="profile-menu">
+                        <button class="profile-btn" id="profile-btn">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="user-name">Mon Profil</span>
+                            <i class="fas fa-chevron-down" id="chevron-icon"></i>
+                        </button>
+                        <div class="profile-dropdown" id="profile-dropdown">
+                            <a href="/espace-etudiant" class="dropdown-item">
+                                <i class="fas fa-chart-line"></i> Mon Espace
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item" onclick="logout()">
+                                <i class="fas fa-sign-out-alt"></i> Déconnexion
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="dashboard-container">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-chart-line"></i> Mon Tableau de Bord</h1>
+                    <p class="dashboard-subtitle">Suivez votre progression et vos performances</p>
+                </div>
+
+                <!-- Stats globales -->
+                <div id="global-stats" class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--primary-color), var(--dark-teal));">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="total-qcm">0</div>
+                            <div class="stat-label">QCM Complétés</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #27ae60, #229954);">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="avg-score">0%</div>
+                            <div class="stat-label">Score Moyen</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="best-subject">-</div>
+                            <div class="stat-label">Meilleure Matière</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="weak-subject">-</div>
+                            <div class="stat-label">À Améliorer</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphique radar -->
+                <div class="chart-container">
+                    <h2><i class="fas fa-chart-radar"></i> Performance par Matière</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                    <p class="chart-note">
+                        <i class="fas fa-info-circle"></i> 
+                        Ce graphique radar montre vos performances dans chaque spécialité médicale
+                    </p>
+                </div>
+
+                <!-- Liste des QCM complétés -->
+                <div class="recent-qcm-container">
+                    <h2><i class="fas fa-history"></i> Mes Derniers QCM</h2>
+                    <div id="recent-qcm-list">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i> Chargement...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-logo">OMAS Externat</div>
+                <div class="footer-links">
+                    <a href="/">Accueil</a>
+                    <a href="/qcm">QCM</a>
+                </div>
+                <div class="footer-copyright">© 2026 OMAS Externat. Tous droits réservés.</div>
+            </div>
+        </footer>
+
+        <script src="/static/app.js"></script>
+        <script src="/static/student-dashboard.js"></script>
     </body>
     </html>
   `)

@@ -427,8 +427,42 @@ function submitQCM(e) {
   // Calculer le pourcentage
   const percentage = ((score / totalQuestions) * 100).toFixed(1);
   
+  // Enregistrer le score dans la base de données
+  saveQcmProgress(score, totalQuestions, percentage / 100);
+  
   // Afficher les résultats
   displayResults(score, totalQuestions, percentage, results);
+}
+
+// Enregistrer la progression dans la base de données
+async function saveQcmProgress(correctAnswers, totalQuestions, scoreDecimal) {
+  const user = JSON.parse(localStorage.getItem('user'));
+  
+  if (!user || !currentQcm) return;
+  
+  try {
+    const response = await fetch('/api/qcm/save-progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        user_id: user.id,
+        qcm_id: currentQcm.id,
+        score: scoreDecimal,
+        total_questions: totalQuestions,
+        correct_answers: correctAnswers,
+        completed: 1
+      })
+    });
+    
+    if (response.ok) {
+      console.log('Progression enregistrée avec succès');
+    }
+  } catch (error) {
+    console.error('Erreur lors de l\'enregistrement:', error);
+  }
 }
 
 // Comparer deux tableaux

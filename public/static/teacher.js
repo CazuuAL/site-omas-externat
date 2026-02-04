@@ -185,15 +185,12 @@ function addQuestion() {
       <input type="text" class="form-input" name="option_e_${questions.length}">
     </div>
     <div class="form-group" id="answer-input-${questions.length}">
-      <label class="form-label">Réponse correcte *</label>
-      <select class="form-input" name="reponse_correcte_${questions.length}" required>
-        <option value="">Sélectionner...</option>
-        <option value="A">A</option>
-        <option value="B">B</option>
-        <option value="C">C</option>
-        <option value="D">D</option>
-        <option value="E">E</option>
-      </select>
+      <label class="form-label">Réponse(s) correcte(s) *</label>
+      <input type="text" class="form-input" name="reponse_correcte_${questions.length}" required
+        placeholder="Ex: A (unique) ou A,C,D (multiples)" 
+        pattern="^[A-E](,[A-E])*$"
+        title="Entrez une ou plusieurs lettres séparées par des virgules (ex: A ou A,C,D)">
+      <small class="form-help">Pour réponse unique: tapez A, B, C, D ou E<br>Pour réponses multiples: tapez A,C ou B,D,E (sans espaces)</small>
     </div>
     <div class="form-group">
       <label class="form-label">Explication de la réponse *</label>
@@ -216,37 +213,27 @@ function updateAnswerInputs(index) {
   const questionType = typeSelect.value;
   
   if (questionType === 'multiple') {
-    // Réponses multiples avec checkboxes
+    // Réponses multiples - champ texte avec exemple
     answerContainer.innerHTML = `
       <label class="form-label">Réponses correctes * (plusieurs possibles)</label>
-      <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-          <input type="checkbox" name="reponse_correcte_${index}" value="A" style="cursor: pointer;">
-          <span>A</span>
-        </label>
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-          <input type="checkbox" name="reponse_correcte_${index}" value="B" style="cursor: pointer;">
-          <span>B</span>
-        </label>
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-          <input type="checkbox" name="reponse_correcte_${index}" value="C" style="cursor: pointer;">
-          <span>C</span>
-        </label>
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-          <input type="checkbox" name="reponse_correcte_${index}" value="D" style="cursor: pointer;">
-          <span>D</span>
-        </label>
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-          <input type="checkbox" name="reponse_correcte_${index}" value="E" style="cursor: pointer;">
-          <span>E</span>
-        </label>
-      </div>
+      <input type="text" class="form-input" name="reponse_correcte_${index}" required
+        placeholder="Ex: A,C,D (sans espaces)" 
+        pattern="^[A-E](,[A-E])*$"
+        title="Entrez plusieurs lettres séparées par des virgules (ex: A,C,D)">
+      <small class="form-help">Entrez les lettres des réponses correctes séparées par des virgules (ex: A,C ou B,D,E)</small>
     `;
   } else {
-    // Réponse unique avec select
+    // Réponse unique - champ texte simple
     answerContainer.innerHTML = `
       <label class="form-label">Réponse correcte *</label>
-      <select class="form-input" name="reponse_correcte_${index}" required>
+      <input type="text" class="form-input" name="reponse_correcte_${index}" required
+        placeholder="Ex: A" 
+        pattern="^[A-E]$"
+        title="Entrez une seule lettre (A, B, C, D ou E)">
+      <small class="form-help">Entrez la lettre de la réponse correcte (A, B, C, D ou E)</small>
+    `;
+  }
+}
         <option value="">Sélectionner...</option>
         <option value="A">A</option>
         <option value="B">B</option>
@@ -302,25 +289,39 @@ async function handleCreateQCM(e) {
   const questionItems = document.querySelectorAll('.question-item');
   questionItems.forEach((item, index) => {
     const questionType = form[`question_type_${index}`].value;
+    const reponseInput = form[`reponse_correcte_${index}`].value.trim().toUpperCase();
+    
+    if (!reponseInput) {
+      showAlert(`Question ${index + 1}: Vous devez entrer une réponse correcte`, 'error');
+      throw new Error('Missing answer');
+    }
+    
     let reponseCorrecte;
     
     if (questionType === 'multiple') {
-      // Pour réponses multiples, récupérer tous les checkboxes cochés
-      const checkboxes = form.querySelectorAll(`input[name="reponse_correcte_${index}"]:checked`);
-      reponseCorrecte = Array.from(checkboxes).map(cb => cb.value);
+      // Pour réponses multiples, split par virgule et trim
+      reponseCorrecte = reponseInput.split(',').map(r => r.trim()).filter(r => r);
       
       if (reponseCorrecte.length === 0) {
-        showAlert(`Question ${index + 1}: Vous devez sélectionner au moins une réponse correcte`, 'error');
-        throw new Error('Missing answers');
+        showAlert(`Question ${index + 1}: Format invalide. Utilisez A,C,D pour plusieurs réponses`, 'error');
+        throw new Error('Invalid format');
+      }
+      
+      // Valider que toutes les réponses sont A-E
+      const validAnswers = ['A', 'B', 'C', 'D', 'E'];
+      for (const r of reponseCorrecte) {
+        if (!validAnswers.includes(r)) {
+          showAlert(`Question ${index + 1}: Réponse invalide "${r}". Utilisez seulement A, B, C, D ou E`, 'error');
+          throw new Error('Invalid answer');
+        }
       }
     } else {
-      // Pour réponse unique
-      reponseCorrecte = form[`reponse_correcte_${index}`].value;
-      
-      if (!reponseCorrecte) {
-        showAlert(`Question ${index + 1}: Vous devez sélectionner une réponse correcte`, 'error');
-        throw new Error('Missing answer');
+      // Pour réponse unique, vérifier qu'il n'y a qu'une lettre
+      if (reponseInput.length !== 1 || !'ABCDE'.includes(reponseInput)) {
+        showAlert(`Question ${index + 1}: Entrez une seule lettre (A, B, C, D ou E)`, 'error');
+        throw new Error('Invalid answer');
       }
+      reponseCorrecte = reponseInput;
     }
     
     const question = {
