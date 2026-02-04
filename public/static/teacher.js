@@ -150,7 +150,6 @@ function editQCM(qcmId) {
 }
 
 // Gestion du formulaire de création de QCM
-let questions = [];
 
 function addQuestion() {
   console.log('🔧 addQuestion() appelée - Questions actuelles:', questions.length);
