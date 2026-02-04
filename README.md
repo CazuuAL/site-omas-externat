@@ -8,8 +8,11 @@ Plateforme de préparation aux examens de l'externat de médecine (EDN & ECOS) a
 **Objectif**: Fournir aux étudiants en médecine une plateforme complète pour s'entraîner aux examens de l'externat avec des QCM hebdomadaires, des corrections détaillées et un suivi de progression.
 
 **Fonctionnalités principales**:
-- ✅ Système d'authentification (connexion/inscription)
+- ✅ Système d'authentification avec rôles (étudiant/enseignant)
 - ✅ QCM hebdomadaires par spécialité
+- ✅ Interface de création de QCM intuitive pour enseignants
+- ✅ Dashboard enseignant avec gestion des QCM
+- ✅ Publication/dépublication des QCM
 - ✅ Corrections détaillées avec explications
 - ✅ Interface responsive et moderne
 - ✅ Base de données D1 pour stockage persistant
@@ -119,10 +122,15 @@ Plateforme de préparation aux examens de l'externat de médecine (EDN & ECOS) a
 
 Pour tester l'application, vous pouvez utiliser ces comptes :
 
+**Étudiant** :
 - **Email**: etudiant1@exemple.fr  
   **Mot de passe**: password123
 
 - **Email**: etudiant2@exemple.fr  
+  **Mot de passe**: password123
+
+**Enseignant** :
+- **Email**: enseignant@exemple.fr  
   **Mot de passe**: password123
 
 ## 🚀 Déploiement
@@ -237,31 +245,56 @@ npx wrangler pages domain add example.com --project-name webapp
    - Hero section avec statistiques
    - Présentation des fonctionnalités
    - Navigation claire
+   - Animations fluides
 
-2. **Authentification**:
-   - Formulaire de connexion/inscription avec onglets
+2. **Système d'authentification avec rôles**:
+   - Formulaire de connexion/inscription avec sélection du rôle
    - Validation des données
    - Stockage des tokens (localStorage)
    - API REST pour login/register
+   - Redirection automatique selon le rôle (étudiant/enseignant)
 
-3. **Page QCM Hebdomadaires**:
-   - Liste des QCM disponibles
+3. **Dashboard Enseignant**:
+   - Liste des QCM créés par l'enseignant
+   - Statut de publication (publié/brouillon)
+   - Actions : Modifier, Publier/Dépublier, Supprimer
+   - Navigation intuitive
+
+4. **Interface de création de QCM**:
+   - Formulaire intuitif pour les informations générales
+   - Ajout dynamique de questions
+   - Support de 4 ou 5 options de réponse
+   - Champ explication pour chaque question
+   - Gestion de la spécialité et des dates
+
+5. **API Teacher**:
+   - `GET /api/teacher/qcm/list/:teacherId` - Liste des QCM de l'enseignant
+   - `POST /api/teacher/qcm/create` - Créer un nouveau QCM
+   - `PUT /api/teacher/qcm/:id` - Modifier un QCM
+   - `POST /api/teacher/qcm/:id/publish` - Publier/dépublier
+   - `DELETE /api/teacher/qcm/:id` - Supprimer un QCM
+
+6. **Page QCM Hebdomadaires**:
+   - Liste des QCM publiés disponibles
    - Affichage par semaine et spécialité
    - Badges de statut (disponible/bientôt)
    - Dates de disponibilité et deadlines
+   - Filtrage automatique (seulement QCM publiés)
 
-4. **Page Détail QCM**:
+7. **Page Détail QCM**:
    - Affichage des questions avec options multiples
    - Bouton "Voir la correction"
    - Affichage de la réponse correcte
    - Explications détaillées
 
-5. **Page FAQ**:
+8. **Page FAQ**:
    - Accordéon interactif
    - Questions fréquentes sur le fonctionnement
 
-6. **Base de données**:
+9. **Base de données**:
    - Schema complet avec migrations
+   - Table users avec colonne role
+   - Table qcm_weekly avec created_by et is_published
    - Données de test (3 QCM, multiple questions)
    - Relations entre tables
    - Indexes pour performance
@@ -280,7 +313,12 @@ npx wrangler pages domain add example.com --project-name webapp
    - Validation des réponses
    - Pourcentage de réussite
 
-3. **Fonctionnalités Avancées**:
+3. **Édition de QCM par les enseignants**:
+   - Formulaire de modification pré-rempli
+   - Mise à jour des questions existantes
+   - Interface intuitive similaire à la création
+
+4. **Fonctionnalités Avancées**:
    - Réinitialisation de mot de passe
    - Profil utilisateur éditable
    - Notifications pour nouveaux QCM
@@ -288,11 +326,11 @@ npx wrangler pages domain add example.com --project-name webapp
    - Mode révision (replay des QCM)
    - Favoris et marque-pages
 
-4. **Administration**:
-   - Interface admin pour créer des QCM
-   - Gestion des utilisateurs
-   - Statistiques globales
-   - Import/Export de questions
+5. **Statistiques Enseignant**:
+   - Nombre d'étudiants ayant complété chaque QCM
+   - Taux de réussite par question
+   - Questions les plus difficiles
+   - Analytics détaillés
 
 ## 🔄 Prochaines Étapes Recommandées
 
