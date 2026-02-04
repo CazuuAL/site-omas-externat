@@ -5,23 +5,33 @@ let questions = [];
 
 // Charger les QCM de l'enseignant
 async function loadTeacherQCMs() {
+  console.log('📚 loadTeacherQCMs() - Début du chargement');
+  
   const user = checkAuth();
+  console.log('👤 Utilisateur:', user);
+  
   if (!user || user.role !== 'teacher') {
+    console.error('❌ Utilisateur non enseignant ou non connecté');
     window.location.href = '/connexion';
     return;
   }
 
   try {
+    console.log(`🌐 Appel API: /api/teacher/qcm/list/${user.id}`);
     const response = await fetch(`/api/teacher/qcm/list/${user.id}`);
     const data = await response.json();
+    
+    console.log('📦 Réponse API:', data);
 
     if (response.ok) {
+      console.log(`✅ ${data.qcms.length} QCM(s) trouvé(s)`);
       displayTeacherQCMs(data.qcms);
     } else {
+      console.error('❌ Erreur réponse:', response.status);
       showAlert('Erreur lors du chargement des QCM', 'error');
     }
   } catch (error) {
-    console.error('Erreur:', error);
+    console.error('❌ Erreur fetch:', error);
     showAlert('Une erreur est survenue', 'error');
   }
 }
@@ -143,9 +153,13 @@ function editQCM(qcmId) {
 let questions = [];
 
 function addQuestion() {
+  console.log('🔧 addQuestion() appelée - Questions actuelles:', questions.length);
+  
   const questionDiv = document.createElement('div');
   questionDiv.className = 'question-item';
   questionDiv.dataset.index = questions.length;
+  
+  console.log('📦 Création de la div question, index:', questions.length);
 
   questionDiv.innerHTML = `
     <div class="question-header">
@@ -202,8 +216,17 @@ function addQuestion() {
     </div>
   `;
 
-  document.getElementById('questions-container').appendChild(questionDiv);
+  const container = document.getElementById('questions-container');
+  if (!container) {
+    console.error('❌ Container "questions-container" introuvable !');
+    return;
+  }
+  
+  console.log('✅ Ajout de la question au container');
+  container.appendChild(questionDiv);
   questions.push({});
+  console.log('✅ Question ajoutée ! Total:', questions.length);
+  updateQuestionNumbers();
 }
 
 // Mettre à jour les inputs de réponse selon le type de question
@@ -422,16 +445,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Page de création de QCM
   if (document.getElementById('create-qcm-form')) {
+    console.log('✅ Formulaire de création détecté');
+    console.log('📝 Tableau questions initialisé:', questions);
+    
     const form = document.getElementById('create-qcm-form');
     form.addEventListener('submit', handleCreateQCM);
 
     // Ajouter une première question par défaut
+    console.log('➕ Ajout de la première question par défaut');
     addQuestion();
   }
 
   // Bouton d'ajout de question
   const addQuestionBtn = document.getElementById('add-question-btn');
   if (addQuestionBtn) {
-    addQuestionBtn.addEventListener('click', addQuestion);
+    console.log('✅ Bouton "Ajouter une question" détecté');
+    addQuestionBtn.addEventListener('click', () => {
+      console.log('🖱️ Clic sur le bouton "Ajouter une question"');
+      console.log('📝 Nombre de questions actuel:', questions.length);
+      addQuestion();
+    });
+  } else {
+    console.error('❌ Bouton "add-question-btn" introuvable !');
   }
 });
