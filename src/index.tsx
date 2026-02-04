@@ -1170,7 +1170,7 @@ app.get('/espace-etudiant', (c) => {
                     <a href="/qcm" class="nav-link">QH</a>
                     <a href="/faq" class="nav-link">FAQ</a>
                     <div class="profile-menu" id="profile-menu">
-                        <button class="profile-btn" id="profile-btn">
+                        <button class="profile-btn" id="profile-btn" onclick="window.toggleProfileMenu && window.toggleProfileMenu(event)">
                             <i class="fas fa-user-circle"></i>
                             <span id="user-name">Profil</span>
                             <i class="fas fa-chevron-down" id="chevron-icon"></i>
@@ -1302,7 +1302,7 @@ app.get('/dashboard-enseignant', (c) => {
                     <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
                     <a href="/" class="nav-link">Accueil</a>
                     <div class="profile-menu" id="profile-menu">
-                        <button class="profile-btn" id="profile-btn">
+                        <button class="profile-btn" id="profile-btn" onclick="window.toggleProfileMenu && window.toggleProfileMenu(event)">
                             <i class="fas fa-user-circle"></i>
                             <span id="user-name">Profil</span>
                             <i class="fas fa-chevron-down" id="chevron-icon"></i>
@@ -1365,7 +1365,7 @@ app.get('/creer-qcm', (c) => {
                     <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
                     <a href="/" class="nav-link">Accueil</a>
                     <div class="profile-menu" id="profile-menu">
-                        <button class="profile-btn" id="profile-btn">
+                        <button class="profile-btn" id="profile-btn" onclick="window.toggleProfileMenu && window.toggleProfileMenu(event)">
                             <i class="fas fa-user-circle"></i>
                             <span id="user-name">Profil</span>
                             <i class="fas fa-chevron-down" id="chevron-icon"></i>

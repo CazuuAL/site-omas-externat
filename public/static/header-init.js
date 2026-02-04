@@ -16,6 +16,28 @@ if (!window.profileMenuInitialized) {
     window.location.href = '/connexion';
   };
   
+  // Fonction globale pour toggle le menu (backup si onclick ne trouve pas le handler)
+  window.toggleProfileMenu = function(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    const profileDropdown = document.getElementById('profile-dropdown');
+    const chevronIcon = document.getElementById('chevron-icon');
+    
+    if (profileDropdown) {
+      profileDropdown.classList.toggle('show');
+      console.log('🖱️ Menu', profileDropdown.classList.contains('show') ? 'ouvert' : 'fermé');
+      
+      if (chevronIcon) {
+        chevronIcon.style.transform = profileDropdown.classList.contains('show') 
+          ? 'rotate(180deg)' 
+          : 'rotate(0deg)';
+      }
+    }
+  };
+  
   // Initialiser dès que le DOM est prêt
   function initProfileMenu() {
     // Récupérer l'utilisateur connecté
