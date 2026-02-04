@@ -1293,14 +1293,14 @@ app.get('/dashboard-enseignant', (c) => {
                     </div>
                     <span class="logo-text">OMAS Externat</span>
                 </a>
-                <nav class="nav-menu">
+                <nav class="nav-menu" style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
                     <a href="/dashboard-enseignant" class="nav-link">Mes QCM</a>
                     <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
                     <a href="/" class="nav-link">Accueil</a>
-                    <span class="nav-link" id="user-name-display" style="color: var(--teal-primary); font-weight: 600;">
+                    <span class="nav-link" id="user-name-display" style="color: var(--teal-primary); font-weight: 600; display: flex; align-items: center; gap: 0.3rem;">
                         <i class="fas fa-user-circle"></i> <span id="user-name">Profil</span>
                     </span>
-                    <a href="#" class="nav-link" onclick="logout(); return false;">
+                    <a href="#" class="nav-link" onclick="logout(); return false;" style="display: flex; align-items: center; gap: 0.3rem; color: var(--red, #e74c3c); font-weight: 600;">
                         <i class="fas fa-sign-out-alt"></i> Déconnexion
                     </a>
                 </nav>
@@ -1352,14 +1352,14 @@ app.get('/creer-qcm', (c) => {
                     </div>
                     <span class="logo-text">OMAS Externat</span>
                 </a>
-                <nav class="nav-menu">
+                <nav class="nav-menu" style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
                     <a href="/dashboard-enseignant" class="nav-link">Mes QCM</a>
                     <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
                     <a href="/" class="nav-link">Accueil</a>
-                    <span class="nav-link" id="user-name-display" style="color: var(--teal-primary); font-weight: 600;">
+                    <span class="nav-link" id="user-name-display" style="color: var(--teal-primary); font-weight: 600; display: flex; align-items: center; gap: 0.3rem;">
                         <i class="fas fa-user-circle"></i> <span id="user-name">Profil</span>
                     </span>
-                    <a href="#" class="nav-link" onclick="logout(); return false;">
+                    <a href="#" class="nav-link" onclick="logout(); return false;" style="display: flex; align-items: center; gap: 0.3rem; color: var(--red, #e74c3c); font-weight: 600;">
                         <i class="fas fa-sign-out-alt"></i> Déconnexion
                     </a>
                 </nav>
