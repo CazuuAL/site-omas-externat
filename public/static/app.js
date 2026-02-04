@@ -259,7 +259,7 @@ function displayQCMList(qcms) {
           <div class="qcm-action">
             ${isAvailable 
               ? `<a href="/qcm/${qcm.id}" class="btn-qcm">
-                   Voir la correction <i class="fas fa-arrow-right"></i>
+                   Effectuer le test <i class="fas fa-arrow-right"></i>
                  </a>`
               : `<span style="color: var(--gray-dark);">Bientôt disponible</span>`
             }
@@ -590,6 +590,13 @@ function displayResults(score, total, percentage, results) {
       </div>
       
       <div style="text-align: center; margin: 2rem 0;">
+        <p style="color: #666; margin-bottom: 1rem;">
+          <i class="fas fa-check-circle" style="color: #10b981;"></i>
+          Votre progression a été enregistrée avec succès !
+        </p>
+        <a href="/espace-etudiant" class="btn-primary" style="display: inline-block; text-decoration: none; margin-right: 1rem;">
+          <i class="fas fa-chart-line"></i> Voir mon dashboard
+        </a>
         <a href="/qcm" class="btn-secondary" style="display: inline-block; text-decoration: none;">
           <i class="fas fa-arrow-left"></i> Retour aux QCM
         </a>
