@@ -649,6 +649,7 @@ app.get('/', (c) => {
         </footer>
 
         <script src="/static/app.js"></script>
+        <script src="/static/header-init.js"></script>
     </body>
     </html>
   `)
@@ -738,6 +739,7 @@ app.get('/connexion', (c) => {
         </div>
 
         <script src="/static/app.js"></script>
+        <script src="/static/header-init.js"></script>
     </body>
     </html>
   `)
@@ -809,6 +811,7 @@ app.get('/qcm', (c) => {
         </footer>
 
         <script src="/static/app.js"></script>
+        <script src="/static/header-init.js"></script>
     </body>
     </html>
   `)
@@ -969,6 +972,7 @@ app.get('/faq', (c) => {
         </footer>
 
         <script src="/static/app.js"></script>
+        <script src="/static/header-init.js"></script>
     </body>
     </html>
   `)
@@ -1127,6 +1131,7 @@ app.get('/qcm/:id', async (c) => {
         </footer>
 
         <script src="/static/app.js"></script>
+        <script src="/static/header-init.js"></script>
         <script>
             // Charger le QCM au chargement de la page
             document.addEventListener('DOMContentLoaded', () => {
@@ -1167,17 +1172,11 @@ app.get('/espace-etudiant', (c) => {
                     <div class="profile-menu" id="profile-menu">
                         <button class="profile-btn" id="profile-btn">
                             <i class="fas fa-user-circle"></i>
-                            <span id="user-name">Mon Profil</span>
+                            <span id="user-name">Profil</span>
                             <i class="fas fa-chevron-down" id="chevron-icon"></i>
                         </button>
                         <div class="profile-dropdown" id="profile-dropdown">
-                            <a href="/espace-etudiant" class="dropdown-item">
-                                <i class="fas fa-chart-line"></i> Mon Espace
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item" onclick="logout()">
-                                <i class="fas fa-sign-out-alt"></i> Déconnexion
-                            </a>
+                            <!-- Contenu dynamique chargé par header-init.js -->
                         </div>
                     </div>
                 </nav>
@@ -1270,6 +1269,7 @@ app.get('/espace-etudiant', (c) => {
         </footer>
 
         <script src="/static/app.js"></script>
+        <script src="/static/header-init.js"></script>
         <script src="/static/student-dashboard.js"></script>
     </body>
     </html>
@@ -1308,13 +1308,7 @@ app.get('/dashboard-enseignant', (c) => {
                             <i class="fas fa-chevron-down" id="chevron-icon"></i>
                         </button>
                         <div class="profile-dropdown" id="profile-dropdown">
-                            <a href="/dashboard-enseignant" class="dropdown-item">
-                                <i class="fas fa-chalkboard-teacher"></i> Dashboard
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item" onclick="logout()">
-                                <i class="fas fa-sign-out-alt"></i> Déconnexion
-                            </a>
+                            <!-- Contenu dynamique chargé par header-init.js -->
                         </div>
                     </div>
                 </nav>
@@ -1338,6 +1332,7 @@ app.get('/dashboard-enseignant', (c) => {
         </div>
 
         <script src="/static/app.js"></script>
+        <script src="/static/header-init.js"></script>
         <script src="/static/teacher.js"></script>
     </body>
     </html>
@@ -1376,13 +1371,7 @@ app.get('/creer-qcm', (c) => {
                             <i class="fas fa-chevron-down" id="chevron-icon"></i>
                         </button>
                         <div class="profile-dropdown" id="profile-dropdown">
-                            <a href="/dashboard-enseignant" class="dropdown-item">
-                                <i class="fas fa-chalkboard-teacher"></i> Dashboard
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item" onclick="logout()">
-                                <i class="fas fa-sign-out-alt"></i> Déconnexion
-                            </a>
+                            <!-- Contenu dynamique chargé par header-init.js -->
                         </div>
                     </div>
                 </nav>
@@ -1481,6 +1470,7 @@ app.get('/creer-qcm', (c) => {
         </div>
 
         <script src="/static/app.js"></script>
+        <script src="/static/header-init.js"></script>
         <script src="/static/teacher.js"></script>
     </body>
     </html>
