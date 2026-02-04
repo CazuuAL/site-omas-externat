@@ -251,8 +251,7 @@ function addQuestion() {
       <select class="form-input" name="question_type_${questions.length}" onchange="updateAnswerInputs(${questions.length})" required>
         <option value="single">QCU - Réponse unique (radio)</option>
         <option value="multiple">QCM - Réponses multiples (checkbox)</option>
-        <option value="qrp">QRP - Réponse ouverte courte</option>
-        <option value="qroc">QROC - Question à réponse ouverte courte</option>
+        <option value="qroc">QROC - Réponse ouverte courte</option>
         <option value="qzp">QZP - Zones à pointer (image)</option>
       </select>
     </div>
@@ -261,34 +260,8 @@ function addQuestion() {
       <textarea class="form-input" name="enonce_${questions.length}" rows="3" required
         placeholder="Ex: Quels sont les facteurs de risque cardiovasculaire modifiables ?"></textarea>
     </div>
-    <div class="form-group">
-      <label class="form-label">Réponse A *</label>
-      <input type="text" class="form-input" name="option_a_${questions.length}" required
-        placeholder="Ex: Hypertension artérielle">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Réponse B *</label>
-      <input type="text" class="form-input" name="option_b_${questions.length}" required>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Réponse C *</label>
-      <input type="text" class="form-input" name="option_c_${questions.length}" required>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Réponse D *</label>
-      <input type="text" class="form-input" name="option_d_${questions.length}" required>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Réponse E (optionnelle)</label>
-      <input type="text" class="form-input" name="option_e_${questions.length}">
-    </div>
-    <div class="form-group" id="answer-input-${questions.length}">
-      <label class="form-label">Réponse(s) correcte(s) *</label>
-      <input type="text" class="form-input" name="reponse_correcte_${questions.length}" required
-        placeholder="Ex: A (unique) ou A,C,D (multiples)" 
-        pattern="^[A-E](,[A-E])*$"
-        title="Entrez une ou plusieurs lettres séparées par des virgules (ex: A ou A,C,D)">
-      <small class="form-help">Pour réponse unique: tapez A, B, C, D ou E<br>Pour réponses multiples: tapez A,C ou B,D,E (sans espaces)</small>
+    <div id="question-content-${questions.length}">
+      <!-- Le contenu sera ajouté dynamiquement selon le type -->
     </div>
     <div class="form-group">
       <label class="form-label">Explication de la réponse *</label>
@@ -308,66 +281,250 @@ function addQuestion() {
   questions.push({});
   console.log('✅ Question ajoutée ! Total:', questions.length);
   updateQuestionNumbers();
+  
+  // Initialiser le contenu selon le type par défaut (single)
+  updateAnswerInputs(questions.length - 1);
 }
 
 // Mettre à jour les inputs de réponse selon le type de question
 function updateAnswerInputs(index) {
   const typeSelect = document.querySelector(`[name="question_type_${index}"]`);
-  const answerContainer = document.getElementById(`answer-input-${index}`);
+  const contentContainer = document.getElementById(`question-content-${index}`);
   
-  if (!typeSelect || !answerContainer) return;
+  if (!typeSelect || !contentContainer) return;
   
   const questionType = typeSelect.value;
   
-  if (questionType === 'multiple') {
-    // QCM - Réponses multiples
-    answerContainer.innerHTML = `
-      <label class="form-label">Réponses correctes * (plusieurs possibles)</label>
-      <input type="text" class="form-input" name="reponse_correcte_${index}" required
-        placeholder="Ex: A,C,D (sans espaces)" 
-        pattern="^[A-E](,[A-E])*$"
-        title="Entrez plusieurs lettres séparées par des virgules (ex: A,C,D)">
-      <small class="form-help">Entrez les lettres des réponses correctes séparées par des virgules (ex: A,C ou B,D,E)</small>
+  if (questionType === 'single' || questionType === 'multiple') {
+    // QCU/QCM - Options A, B, C, D, E + réponse correcte
+    contentContainer.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">Réponse A *</label>
+        <input type="text" class="form-input" name="option_a_${index}" required
+          placeholder="Ex: Hypertension artérielle">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Réponse B *</label>
+        <input type="text" class="form-input" name="option_b_${index}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Réponse C *</label>
+        <input type="text" class="form-input" name="option_c_${index}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Réponse D *</label>
+        <input type="text" class="form-input" name="option_d_${index}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Réponse E (optionnelle)</label>
+        <input type="text" class="form-input" name="option_e_${index}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Réponse(s) correcte(s) *</label>
+        <input type="text" class="form-input" name="reponse_correcte_${index}" required
+          placeholder="${questionType === 'multiple' ? 'Ex: A,C,D (sans espaces)' : 'Ex: A'}" 
+          pattern="^[A-E](,[A-E])*$"
+          title="Entrez ${questionType === 'multiple' ? 'plusieurs lettres séparées par des virgules' : 'une seule lettre'}">
+        <small class="form-help">${questionType === 'multiple' ? 'Entrez les lettres des réponses correctes séparées par des virgules (ex: A,C,D)' : 'Entrez la lettre de la réponse correcte (A, B, C, D ou E)'}</small>
+      </div>
     `;
-  } else if (questionType === 'qrp' || questionType === 'qroc') {
-    // QRP/QROC - Réponse ouverte courte
-    answerContainer.innerHTML = `
-      <label class="form-label">Réponse attendue *</label>
-      <input type="text" class="form-input" name="reponse_attendue_${index}" required
-        placeholder="Ex: Hypertension artérielle">
-      <small class="form-help">La réponse de l'étudiant devra correspondre à cette réponse (comparaison exacte ou flexible)</small>
-      <div class="form-group" style="margin-top: 1rem;">
+  } else if (questionType === 'qroc') {
+    // QROC - Réponse ouverte courte (texte libre)
+    contentContainer.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">Réponse attendue *</label>
+        <input type="text" class="form-input" name="reponse_attendue_${index}" required
+          placeholder="Ex: Hypertension artérielle">
+        <small class="form-help">La réponse que l'étudiant devra saisir (comparaison exacte)</small>
+      </div>
+      <div class="form-group">
         <label class="form-label">Variantes acceptées (optionnel)</label>
-        <textarea class="form-input" name="variantes_${index}" rows="2"
-          placeholder="Ex: HTA, Hypertension, Pression artérielle élevée (une par ligne)"></textarea>
+        <textarea class="form-input" name="variantes_${index}" rows="3"
+          placeholder="Ex: HTA&#10;Hypertension&#10;Pression artérielle élevée"></textarea>
         <small class="form-help">Entrez les variantes de réponse acceptées, une par ligne</small>
       </div>
     `;
   } else if (questionType === 'qzp') {
     // QZP - Zones à pointer sur image
-    answerContainer.innerHTML = `
-      <label class="form-label">URL de l'image *</label>
-      <input type="url" class="form-input" name="image_url_${index}" required
-        placeholder="Ex: https://example.com/image.jpg">
-      <small class="form-help">Entrez l'URL de l'image sur laquelle l'étudiant devra cliquer</small>
-      <div class="form-group" style="margin-top: 1rem;">
-        <label class="form-label">Zones cliquables * (JSON)</label>
-        <textarea class="form-input" name="zones_cliquables_${index}" rows="4" required
-          placeholder='[{"x": 100, "y": 150, "width": 50, "height": 50, "label": "Zone 1"}]'></textarea>
-        <small class="form-help">Format JSON: tableau d'objets avec x, y, width, height, label</small>
+    contentContainer.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">Image de la question *</label>
+        <input type="file" class="form-input" id="image_upload_${index}" accept="image/*" required
+          onchange="handleImageUpload(${index}, event)">
+        <small class="form-help">Téléchargez une image sur laquelle l'étudiant devra pointer</small>
+        <div id="image_preview_${index}" style="margin-top: 1rem; display: none;">
+          <img id="preview_img_${index}" style="max-width: 100%; border: 2px solid var(--gray-light); border-radius: 8px;" />
+          <canvas id="canvas_${index}" style="display: none; max-width: 100%; border: 2px solid var(--teal-primary); border-radius: 8px; cursor: crosshair; margin-top: 0.5rem;"></canvas>
+        </div>
+      </div>
+      <div class="form-group" id="zones_container_${index}" style="display: none;">
+        <label class="form-label">Zones cliquables définies</label>
+        <div id="zones_list_${index}" style="margin-top: 0.5rem;">
+          <!-- Liste des zones sera ajoutée ici -->
+        </div>
+        <button type="button" class="btn-secondary" onclick="toggleCanvasMode(${index})">
+          <i class="fas fa-plus"></i> Ajouter une zone
+        </button>
+        <input type="hidden" name="zones_cliquables_${index}" id="zones_data_${index}">
+        <input type="hidden" name="image_url_${index}" id="image_url_${index}">
       </div>
     `;
-  } else {
-    // QCU - Réponse unique
-    answerContainer.innerHTML = `
-      <label class="form-label">Réponse correcte *</label>
-      <input type="text" class="form-input" name="reponse_correcte_${index}" required
-        placeholder="Ex: A" 
-        pattern="^[A-E]$"
-        title="Entrez une seule lettre (A, B, C, D ou E)">
-      <small class="form-help">Entrez la lettre de la réponse correcte (A, B, C, D ou E)</small>
-    `;
   }
+}
+
+// Gestion de l'upload d'image pour les questions QZP
+let questionImages = {}; // Stocker les images par index
+
+function handleImageUpload(index, event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const imageData = e.target.result;
+    questionImages[index] = imageData;
+    
+    // Stocker dans le hidden input
+    document.getElementById(`image_url_${index}`).value = imageData;
+    
+    // Afficher l'aperçu
+    const previewContainer = document.getElementById(`image_preview_${index}`);
+    const previewImg = document.getElementById(`preview_img_${index}`);
+    
+    previewImg.src = imageData;
+    previewContainer.style.display = 'block';
+    
+    // Afficher le container des zones
+    document.getElementById(`zones_container_${index}`).style.display = 'block';
+    
+    console.log('✅ Image chargée pour la question', index);
+  };
+  reader.readAsDataURL(file);
+}
+
+// Toggle entre mode aperçu et mode dessin de zone
+let canvasMode = {}; // Stocker l'état du mode canvas par index
+let zones = {}; // Stocker les zones par index
+
+function toggleCanvasMode(index) {
+  const canvas = document.getElementById(`canvas_${index}`);
+  const previewImg = document.getElementById(`preview_img_${index}`);
+  
+  if (!zones[index]) {
+    zones[index] = [];
+  }
+  
+  if (canvasMode[index]) {
+    // Désactiver le mode canvas
+    canvas.style.display = 'none';
+    previewImg.style.display = 'block';
+    canvasMode[index] = false;
+  } else {
+    // Activer le mode canvas
+    canvas.style.display = 'block';
+    previewImg.style.display = 'none';
+    canvasMode[index] = true;
+    
+    // Initialiser le canvas avec l'image
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = function() {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      
+      // Redessiner les zones existantes
+      redrawZones(index);
+    };
+    img.src = questionImages[index];
+    
+    // Ajouter l'événement de clic pour définir une zone
+    canvas.onclick = function(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const zoneName = prompt('Nom de cette zone (ex: "Artère aorte") :');
+      if (!zoneName) return;
+      
+      const zoneRadius = prompt('Rayon de la zone en pixels (défaut: 30) :') || 30;
+      
+      // Ajouter la zone
+      zones[index].push({
+        x: Math.round(x),
+        y: Math.round(y),
+        radius: parseInt(zoneRadius),
+        label: zoneName
+      });
+      
+      // Sauvegarder dans le hidden input
+      document.getElementById(`zones_data_${index}`).value = JSON.stringify(zones[index]);
+      
+      // Redessiner
+      redrawZones(index);
+      
+      // Mettre à jour la liste
+      updateZonesList(index);
+      
+      console.log('✅ Zone ajoutée:', zones[index][zones[index].length - 1]);
+    };
+  }
+}
+
+function redrawZones(index) {
+  const canvas = document.getElementById(`canvas_${index}`);
+  const ctx = canvas.getContext('2d');
+  
+  // Redessiner l'image
+  const img = new Image();
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0);
+    
+    // Dessiner toutes les zones
+    zones[index].forEach((zone, i) => {
+      ctx.beginPath();
+      ctx.arc(zone.x, zone.y, zone.radius, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#008080';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      
+      ctx.fillStyle = 'rgba(0, 128, 128, 0.2)';
+      ctx.fill();
+      
+      // Numéro de la zone
+      ctx.fillStyle = '#008080';
+      ctx.font = 'bold 16px Arial';
+      ctx.fillText((i + 1).toString(), zone.x - 8, zone.y + 5);
+    });
+  };
+  img.src = questionImages[index];
+}
+
+function updateZonesList(index) {
+  const zonesList = document.getElementById(`zones_list_${index}`);
+  if (!zones[index] || zones[index].length === 0) {
+    zonesList.innerHTML = '<p style="color: var(--gray-medium);">Aucune zone définie</p>';
+    return;
+  }
+  
+  zonesList.innerHTML = zones[index].map((zone, i) => `
+    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem; background: var(--gray-light); border-radius: 4px; margin-bottom: 0.5rem;">
+      <span style="font-weight: 600;">Zone ${i + 1}:</span>
+      <span>${zone.label}</span>
+      <span style="color: var(--gray-medium); font-size: 0.9rem;">(x:${zone.x}, y:${zone.y}, rayon:${zone.radius}px)</span>
+      <button type="button" class="btn-icon btn-danger" onclick="removeZone(${index}, ${i})" style="margin-left: auto;">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+  `).join('');
+}
+
+function removeZone(questionIndex, zoneIndex) {
+  zones[questionIndex].splice(zoneIndex, 1);
+  document.getElementById(`zones_data_${questionIndex}`).value = JSON.stringify(zones[questionIndex]);
+  redrawZones(questionIndex);
+  updateZonesList(questionIndex);
+  console.log('✅ Zone supprimée');
 }
 
 function removeQuestion(index) {
