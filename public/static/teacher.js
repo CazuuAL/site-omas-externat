@@ -149,6 +149,77 @@ function editQCM(qcmId) {
   window.location.href = `/creer-qcm?edit=${qcmId}`;
 }
 
+// Charger un QCM pour édition
+async function loadQCMForEdit(qcmId) {
+  try {
+    const response = await fetch(`/api/teacher/qcm/${qcmId}/details`);
+    if (!response.ok) {
+      throw new Error('QCM introuvable');
+    }
+    
+    const data = await response.json();
+    const qcm = data.qcm;
+    const qcmQuestions = data.questions;
+    
+    console.log('📥 QCM chargé pour édition:', qcm);
+    console.log('📥 Questions:', qcmQuestions);
+    
+    // Remplir le formulaire avec les données du QCM
+    document.getElementById('titre').value = qcm.titre;
+    document.getElementById('specialite').value = qcm.specialite;
+    document.getElementById('semaine').value = qcm.semaine;
+    document.getElementById('description').value = qcm.description || '';
+    document.getElementById('disponible_debut').value = qcm.disponible_debut;
+    document.getElementById('disponible_fin').value = qcm.disponible_fin;
+    document.getElementById('date_limite').value = qcm.date_limite;
+    
+    // Changer le titre et le bouton
+    const pageTitle = document.querySelector('h1');
+    if (pageTitle) pageTitle.textContent = 'Modifier le QCM';
+    
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-save"></i> Enregistrer les modifications';
+    
+    // Ajouter les questions existantes
+    qcmQuestions.forEach((q, index) => {
+      addQuestion();
+      
+      // Remplir les champs de la question
+      const form = document.getElementById('create-qcm-form');
+      form[`question_type_${index}`].value = q.question_type || 'single';
+      form[`enonce_${index}`].value = q.enonce;
+      form[`option_a_${index}`].value = q.option_a;
+      form[`option_b_${index}`].value = q.option_b;
+      form[`option_c_${index}`].value = q.option_c;
+      form[`option_d_${index}`].value = q.option_d;
+      if (q.option_e) form[`option_e_${index}`].value = q.option_e;
+      
+      // Déclencher updateAnswerInputs pour mettre à jour les champs de réponse
+      updateAnswerInputs(index);
+      
+      // Remplir la réponse correcte
+      setTimeout(() => {
+        if (q.question_type === 'multiple' && q.reponses_correctes) {
+          const correctAnswers = JSON.parse(q.reponses_correctes);
+          form[`reponse_correcte_${index}`].value = correctAnswers.join(',');
+        } else if (q.reponse_correcte) {
+          form[`reponse_correcte_${index}`].value = q.reponse_correcte;
+        }
+        
+        form[`explication_${index}`].value = q.explication || '';
+      }, 100);
+    });
+    
+    // Modifier le formulaire pour envoyer une requête PUT au lieu de POST
+    const form = document.getElementById('create-qcm-form');
+    form.setAttribute('data-edit-id', qcmId);
+    
+  } catch (error) {
+    console.error('Erreur lors du chargement du QCM:', error);
+    showAlert('Erreur lors du chargement du QCM', 'error');
+  }
+}
+
 // Gestion du formulaire de création de QCM
 
 function addQuestion() {
@@ -366,11 +437,19 @@ async function handleCreateQCM(e) {
   const submitBtn = form.querySelector('button[type="submit"]');
   const originalText = submitBtn.textContent;
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Création en cours...';
+  
+  // Vérifier si on est en mode édition
+  const editId = form.getAttribute('data-edit-id');
+  const isEditing = !!editId;
+  
+  submitBtn.textContent = isEditing ? 'Modification en cours...' : 'Création en cours...';
 
   try {
-    const response = await fetch('/api/teacher/qcm/create', {
-      method: 'POST',
+    const url = isEditing ? `/api/teacher/qcm/${editId}` : '/api/teacher/qcm/create';
+    const method = isEditing ? 'PUT' : 'POST';
+    
+    const response = await fetch(url, {
+      method: method,
       headers: {
         'Content-Type': 'application/json'
       },
@@ -382,12 +461,12 @@ async function handleCreateQCM(e) {
     console.log('📥 Réponse serveur - Data:', data);
 
     if (response.ok) {
-      showAlert('QCM créé avec succès !', 'success');
+      showAlert(isEditing ? 'QCM modifié avec succès !' : 'QCM créé avec succès !', 'success');
       setTimeout(() => {
         window.location.href = '/dashboard-enseignant';
       }, 1500);
     } else {
-      showAlert(data.error || 'Erreur lors de la création du QCM', 'error');
+      showAlert(data.error || `Erreur lors de ${isEditing ? 'la modification' : 'la création'} du QCM`, 'error');
     }
   } catch (error) {
     console.error('Erreur:', error);
@@ -446,9 +525,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('create-qcm-form');
     form.addEventListener('submit', handleCreateQCM);
 
-    // Ajouter une première question par défaut
-    console.log('➕ Ajout de la première question par défaut');
-    addQuestion();
+    // Vérifier si on est en mode édition
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    
+    if (editId) {
+      console.log('✏️ Mode édition détecté pour le QCM ID:', editId);
+      loadQCMForEdit(editId);
+    } else {
+      // Ajouter une première question par défaut uniquement en mode création
+      console.log('➕ Ajout de la première question par défaut');
+      addQuestion();
+    }
   }
 
   // Bouton d'ajout de question
