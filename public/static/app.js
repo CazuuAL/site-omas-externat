@@ -1,5 +1,10 @@
 // Frontend JavaScript pour OMAS Externat
 
+// Variables globales pour le QCM en cours
+let currentQCM = null;
+let currentQuestions = [];
+let userAnswers = {};
+
 // Gestion des onglets (Connexion / Inscription)
 function initTabs() {
   const tabs = document.querySelectorAll('.tab');
@@ -472,7 +477,18 @@ function submitQCM(e) {
 async function saveQcmProgress(correctAnswers, totalQuestions, scoreDecimal) {
   const user = JSON.parse(localStorage.getItem('user'));
   
-  if (!user || !currentQcm) return;
+  if (!user || !currentQCM) {
+    console.error('❌ Cannot save progress: user or currentQCM is missing', { user, currentQCM });
+    return;
+  }
+  
+  console.log('💾 Saving progress:', {
+    user_id: user.id,
+    qcm_id: currentQCM.id,
+    score: scoreDecimal,
+    total_questions: totalQuestions,
+    correct_answers: correctAnswers
+  });
   
   try {
     const response = await fetch('/api/qcm/save-progress', {
@@ -483,7 +499,7 @@ async function saveQcmProgress(correctAnswers, totalQuestions, scoreDecimal) {
       },
       body: JSON.stringify({
         user_id: user.id,
-        qcm_id: currentQcm.id,
+        qcm_id: currentQCM.id,
         score: scoreDecimal,
         total_questions: totalQuestions,
         correct_answers: correctAnswers,
@@ -491,11 +507,15 @@ async function saveQcmProgress(correctAnswers, totalQuestions, scoreDecimal) {
       })
     });
     
+    const data = await response.json();
+    
     if (response.ok) {
-      console.log('Progression enregistrée avec succès');
+      console.log('✅ Progression enregistrée avec succès:', data);
+    } else {
+      console.error('❌ Erreur serveur lors de l\'enregistrement:', data);
     }
   } catch (error) {
-    console.error('Erreur lors de l\'enregistrement:', error);
+    console.error('❌ Erreur réseau lors de l\'enregistrement:', error);
   }
 }
 
