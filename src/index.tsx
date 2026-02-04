@@ -650,6 +650,7 @@ app.get('/', (c) => {
 
         <script src="/static/app.js"></script>
         <script src="/static/header-init.js"></script>
+        <script src="/static/header-dynamic.js"></script>
     </body>
     </html>
   `)
@@ -740,6 +741,7 @@ app.get('/connexion', (c) => {
 
         <script src="/static/app.js"></script>
         <script src="/static/header-init.js"></script>
+        <script src="/static/header-dynamic.js"></script>
     </body>
     </html>
   `)
@@ -812,6 +814,7 @@ app.get('/qcm', (c) => {
 
         <script src="/static/app.js"></script>
         <script src="/static/header-init.js"></script>
+        <script src="/static/header-dynamic.js"></script>
     </body>
     </html>
   `)
@@ -973,6 +976,7 @@ app.get('/faq', (c) => {
 
         <script src="/static/app.js"></script>
         <script src="/static/header-init.js"></script>
+        <script src="/static/header-dynamic.js"></script>
     </body>
     </html>
   `)
