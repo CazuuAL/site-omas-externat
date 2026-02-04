@@ -227,18 +227,20 @@ app.get('/', (c) => {
     </head>
     <body>
         <header class="header">
-            <a href="/" class="logo-container">
-                <div class="logo-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <span class="logo-text">OMAS Externat</span>
-            </a>
-            <nav class="nav-menu">
-                <a href="/" class="nav-link">Accueil</a>
-                <a href="/qcm" class="nav-link">QH</a>
-                <a href="/faq" class="nav-link">FAQ</a>
-                <a href="/connexion" class="btn-connexion">Connexion</a>
-            </nav>
+            <div class="header-content">
+                <a href="/" class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="logo-text">OMAS Externat</span>
+                </a>
+                <nav class="nav-menu">
+                    <a href="/" class="nav-link">Accueil</a>
+                    <a href="/qcm" class="nav-link">QH</a>
+                    <a href="/faq" class="nav-link">FAQ</a>
+                    <a href="/connexion" class="btn-connexion">Connexion</a>
+                </nav>
+            </div>
         </header>
 
         <section class="hero">
@@ -256,7 +258,7 @@ app.get('/', (c) => {
                 corrections détaillées.
             </p>
             <div class="hero-buttons">
-                <a href="/qcm" class="btn-primary" style="display: inline-block; text-decoration: none;">
+                <a href="/qcm" class="btn-primary" style="display: inline-block; text-decoration: none; width: auto;">
                     Accéder aux QCM <i class="fas fa-arrow-right"></i>
                 </a>
                 <a href="/faq" class="btn-secondary">
@@ -469,18 +471,20 @@ app.get('/qcm', (c) => {
     </head>
     <body>
         <header class="header">
-            <a href="/" class="logo-container">
-                <div class="logo-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <span class="logo-text">OMAS Externat</span>
-            </a>
-            <nav class="nav-menu">
-                <a href="/" class="nav-link">Accueil</a>
-                <a href="/qcm" class="nav-link">QH</a>
-                <a href="/faq" class="nav-link">FAQ</a>
-                <a href="/connexion" class="btn-connexion">Connexion</a>
-            </nav>
+            <div class="header-content">
+                <a href="/" class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="logo-text">OMAS Externat</span>
+                </a>
+                <nav class="nav-menu">
+                    <a href="/" class="nav-link">Accueil</a>
+                    <a href="/qcm" class="nav-link">QH</a>
+                    <a href="/faq" class="nav-link">FAQ</a>
+                    <a href="/connexion" class="btn-connexion">Connexion</a>
+                </nav>
+            </div>
         </header>
 
         <section style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
@@ -538,18 +542,20 @@ app.get('/faq', (c) => {
     </head>
     <body>
         <header class="header">
-            <a href="/" class="logo-container">
-                <div class="logo-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <span class="logo-text">OMAS Externat</span>
-            </a>
-            <nav class="nav-menu">
-                <a href="/" class="nav-link">Accueil</a>
-                <a href="/qcm" class="nav-link">QH</a>
-                <a href="/faq" class="nav-link">FAQ</a>
-                <a href="/connexion" class="btn-connexion">Connexion</a>
-            </nav>
+            <div class="header-content">
+                <a href="/" class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="logo-text">OMAS Externat</span>
+                </a>
+                <nav class="nav-menu">
+                    <a href="/" class="nav-link">Accueil</a>
+                    <a href="/qcm" class="nav-link">QH</a>
+                    <a href="/faq" class="nav-link">FAQ</a>
+                    <a href="/connexion" class="btn-connexion">Connexion</a>
+                </nav>
+            </div>
         </header>
 
         <section style="padding: 3rem 2rem;">
@@ -790,18 +796,20 @@ app.get('/qcm/:id', async (c) => {
     </head>
     <body>
         <header class="header">
-            <a href="/" class="logo-container">
-                <div class="logo-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <span class="logo-text">OMAS Externat</span>
-            </a>
-            <nav class="nav-menu">
-                <a href="/" class="nav-link">Accueil</a>
-                <a href="/qcm" class="nav-link">QH</a>
-                <a href="/faq" class="nav-link">FAQ</a>
-                <a href="/connexion" class="btn-connexion">Connexion</a>
-            </nav>
+            <div class="header-content">
+                <a href="/" class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="logo-text">OMAS Externat</span>
+                </a>
+                <nav class="nav-menu">
+                    <a href="/" class="nav-link">Accueil</a>
+                    <a href="/qcm" class="nav-link">QH</a>
+                    <a href="/faq" class="nav-link">FAQ</a>
+                    <a href="/connexion" class="btn-connexion">Connexion</a>
+                </nav>
+            </div>
         </header>
 
         <div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
