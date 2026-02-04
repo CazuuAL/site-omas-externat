@@ -13,12 +13,15 @@ Plateforme de préparation aux examens de l'externat de médecine (EDN & ECOS) a
 - ✅ Interface de création de QCM intuitive pour enseignants
 - ✅ Dashboard enseignant avec gestion des QCM
 - ✅ Publication/dépublication des QCM
+- ✅ Support des questions à réponses multiples (checkboxes)
+- ✅ Système de notation automatique avec page de résultats
+- ✅ Menu déroulant du profil (évite déconnexion accidentelle)
 - ✅ Corrections détaillées avec explications
-- ✅ Interface responsive et moderne
+- ✅ Interface responsive et moderne avec animations
 - ✅ Base de données D1 pour stockage persistant
 - 🚧 Suivi de progression des étudiants (en cours)
 - 🚧 Espace étudiant personnalisé (à venir)
-- 🚧 Système de scoring et statistiques (à venir)
+- 🚧 Statistiques enseignant (à venir)
 
 ## 🌐 URLs
 
@@ -54,7 +57,9 @@ Plateforme de préparation aux examens de l'externat de médecine (EDN & ECOS) a
 - `qcm_id`: INTEGER (FOREIGN KEY)
 - `enonce`: TEXT
 - `option_a`, `option_b`, `option_c`, `option_d`, `option_e`: TEXT
-- `reponse_correcte`: TEXT
+- `question_type`: TEXT ('single' ou 'multiple')
+- `reponse_correcte`: TEXT (pour questions simples, ex: 'A')
+- `reponses_correctes`: TEXT (JSON array pour questions multiples, ex: '["A","C"]')
 - `explication`: TEXT
 - `ordre`: INTEGER
 
@@ -106,15 +111,25 @@ Plateforme de préparation aux examens de l'externat de médecine (EDN & ECOS) a
 
 3. **Accéder aux QCM**:
    - Cliquer sur "QH" dans le menu ou "Accéder aux QCM" sur la page d'accueil
-   - Voir la liste des QCM hebdomadaires disponibles
-   - Cliquer sur "Voir la correction" pour un QCM
+   - Voir la liste des QCM hebdomadaires publiés
+   - Cliquer sur "Répondre au QCM" pour commencer
 
 4. **Répondre aux Questions**:
    - Lire l'énoncé de chaque question
-   - Sélectionner votre réponse parmi les options (A, B, C, D, E)
-   - Cliquer sur "Voir la correction" pour afficher la bonne réponse et l'explication
+   - **Questions à réponse unique**: Sélectionner UNE seule réponse (radio button)
+   - **Questions à réponses multiples**: Cocher PLUSIEURS réponses (checkboxes) - badge violet visible
+   - Cliquer sur "Valider et voir ma note" à la fin du QCM
 
-5. **Consulter la FAQ**:
+5. **Consulter vos Résultats**:
+   - Voir votre score global (X/Y) et pourcentage
+   - Message contextuel selon votre performance :
+     - < 50% : "Continuez à réviser !" (rouge)
+     - 50-74% : "Bon travail, encore un effort !" (orange)
+     - ≥ 75% : "Excellent travail !" (vert)
+   - Détail par question avec votre réponse vs réponse correcte
+   - Explications détaillées pour chaque question
+
+6. **Consulter la FAQ**:
    - Cliquer sur "FAQ" dans le menu
    - Lire les questions fréquentes
 
