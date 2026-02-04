@@ -362,8 +362,8 @@ function updateAnswerInputs(index) {
         <div id="zones_list_${index}" style="margin-top: 0.5rem;">
           <!-- Liste des zones sera ajoutée ici -->
         </div>
-        <button type="button" class="btn-secondary" onclick="toggleCanvasMode(${index})">
-          <i class="fas fa-plus"></i> Ajouter une zone
+        <button type="button" class="btn-secondary" id="add_zone_btn_${index}" onclick="toggleCanvasMode(${index})" disabled style="opacity: 0.5; cursor: not-allowed;">
+          <i class="fas fa-plus"></i> Ajouter une zone (uploadez d'abord une image)
         </button>
         <input type="hidden" name="zones_cliquables_${index}" id="zones_data_${index}">
         <input type="hidden" name="image_url_${index}" id="image_url_${index}">
@@ -395,7 +395,17 @@ function handleImageUpload(index, event) {
     previewContainer.style.display = 'block';
     
     // Afficher le container des zones
-    document.getElementById(`zones_container_${index}`).style.display = 'block';
+    const zonesContainer = document.getElementById(`zones_container_${index}`);
+    zonesContainer.style.display = 'block';
+    
+    // Activer le bouton "Ajouter une zone"
+    const addZoneBtn = document.getElementById(`add_zone_btn_${index}`);
+    if (addZoneBtn) {
+      addZoneBtn.disabled = false;
+      addZoneBtn.style.opacity = '1';
+      addZoneBtn.style.cursor = 'pointer';
+      addZoneBtn.innerHTML = '<i class="fas fa-plus"></i> Ajouter une zone';
+    }
     
     console.log('✅ Image chargée pour la question', index);
   };
@@ -410,6 +420,12 @@ let draggedZone = {}; // Zone en cours de déplacement par index
 function toggleCanvasMode(index) {
   const canvas = document.getElementById(`canvas_${index}`);
   const previewImg = document.getElementById(`preview_img_${index}`);
+  
+  // Vérifier que l'image est bien uploadée
+  if (!questionImages[index]) {
+    alert('⚠️ Veuillez d\'abord uploader une image avant d\'ajouter des zones.');
+    return;
+  }
   
   if (!zones[index]) {
     zones[index] = [];
