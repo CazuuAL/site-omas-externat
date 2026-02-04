@@ -10,18 +10,20 @@ Plateforme de préparation aux examens de l'externat de médecine (EDN & ECOS) a
 **Fonctionnalités principales**:
 - ✅ Système d'authentification avec rôles (étudiant/enseignant)
 - ✅ QCM hebdomadaires par spécialité
-- ✅ Interface de création de QCM intuitive pour enseignants
+- ✅ Interface de création de QCM avec saisie manuelle des réponses (ex: A ou A,C,D)
 - ✅ Dashboard enseignant avec gestion des QCM
+- ✅ Dashboard étudiant avec :
+  - Stats globales (QCM complétés, score moyen, meilleure/faible matière)
+  - Graphique radar interactif (performance par matière)
+  - Historique des QCM complétés avec notes
 - ✅ Publication/dépublication des QCM
 - ✅ Support des questions à réponses multiples (checkboxes)
 - ✅ Système de notation automatique avec page de résultats
+- ✅ Enregistrement automatique des scores dans la BDD
 - ✅ Menu déroulant du profil (évite déconnexion accidentelle)
 - ✅ Corrections détaillées avec explications
 - ✅ Interface responsive et moderne avec animations
 - ✅ Base de données D1 pour stockage persistant
-- 🚧 Suivi de progression des étudiants (en cours)
-- 🚧 Espace étudiant personnalisé (à venir)
-- 🚧 Statistiques enseignant (à venir)
 
 ## 🌐 URLs
 
