@@ -315,11 +315,6 @@ function initFAQ() {
   });
 }
 
-// Variables globales pour le QCM en cours
-let currentQCM = null;
-let currentQuestions = [];
-let userAnswers = {};
-
 // Charger un QCM spécifique avec ses questions
 async function loadQCM(qcmId) {
   try {
