@@ -660,53 +660,101 @@ async function handleCreateQCM(e) {
   const questionItems = document.querySelectorAll('.question-item');
   questionItems.forEach((item, index) => {
     const questionType = form[`question_type_${index}`].value;
-    const reponseInput = form[`reponse_correcte_${index}`].value.trim().toUpperCase();
-    
-    if (!reponseInput) {
-      showAlert(`Question ${index + 1}: Vous devez entrer une réponse correcte`, 'error');
-      throw new Error('Missing answer');
-    }
-    
-    let reponseCorrecte;
-    
-    if (questionType === 'multiple') {
-      // Pour réponses multiples, split par virgule et trim
-      reponseCorrecte = reponseInput.split(',').map(r => r.trim()).filter(r => r);
-      
-      if (reponseCorrecte.length === 0) {
-        showAlert(`Question ${index + 1}: Format invalide. Utilisez A,C,D pour plusieurs réponses`, 'error');
-        throw new Error('Invalid format');
-      }
-      
-      // Valider que toutes les réponses sont A-E
-      const validAnswers = ['A', 'B', 'C', 'D', 'E'];
-      for (const r of reponseCorrecte) {
-        if (!validAnswers.includes(r)) {
-          showAlert(`Question ${index + 1}: Réponse invalide "${r}". Utilisez seulement A, B, C, D ou E`, 'error');
-          throw new Error('Invalid answer');
-        }
-      }
-    } else {
-      // Pour réponse unique, vérifier qu'il n'y a qu'une lettre
-      if (reponseInput.length !== 1 || !'ABCDE'.includes(reponseInput)) {
-        showAlert(`Question ${index + 1}: Entrez une seule lettre (A, B, C, D ou E)`, 'error');
-        throw new Error('Invalid answer');
-      }
-      reponseCorrecte = reponseInput;
-    }
     
     const question = {
       question_type: questionType,
       enonce: form[`enonce_${index}`].value,
-      option_a: form[`option_a_${index}`].value,
-      option_b: form[`option_b_${index}`].value,
-      option_c: form[`option_c_${index}`].value,
-      option_d: form[`option_d_${index}`].value,
-      option_e: form[`option_e_${index}`]?.value || null,
-      reponse_correcte: questionType === 'single' ? reponseCorrecte : null,
-      reponses_correctes: questionType === 'multiple' ? JSON.stringify(reponseCorrecte) : null,
-      explication: form[`explication_${index}`].value
+      explication: form[`explication_${index}`].value,
+      option_a: null,
+      option_b: null,
+      option_c: null,
+      option_d: null,
+      option_e: null,
+      reponse_correcte: null,
+      reponses_correctes: null,
+      reponse_attendue: null,
+      image_url: null,
+      zones_cliquables: null
     };
+    
+    if (questionType === 'single' || questionType === 'multiple') {
+      // QCU/QCM - Options + réponse(s) correcte(s)
+      question.option_a = form[`option_a_${index}`].value;
+      question.option_b = form[`option_b_${index}`].value;
+      question.option_c = form[`option_c_${index}`].value;
+      question.option_d = form[`option_d_${index}`].value;
+      question.option_e = form[`option_e_${index}`]?.value || null;
+      
+      const reponseInput = form[`reponse_correcte_${index}`].value.trim().toUpperCase();
+      
+      if (!reponseInput) {
+        showAlert(`Question ${index + 1}: Vous devez entrer une réponse correcte`, 'error');
+        throw new Error('Missing answer');
+      }
+      
+      if (questionType === 'multiple') {
+        const reponseCorrecte = reponseInput.split(',').map(r => r.trim()).filter(r => r);
+        
+        if (reponseCorrecte.length === 0) {
+          showAlert(`Question ${index + 1}: Format invalide. Utilisez A,C,D pour plusieurs réponses`, 'error');
+          throw new Error('Invalid format');
+        }
+        
+        const validAnswers = ['A', 'B', 'C', 'D', 'E'];
+        for (const r of reponseCorrecte) {
+          if (!validAnswers.includes(r)) {
+            showAlert(`Question ${index + 1}: Réponse invalide "${r}". Utilisez seulement A, B, C, D ou E`, 'error');
+            throw new Error('Invalid answer');
+          }
+        }
+        
+        question.reponses_correctes = JSON.stringify(reponseCorrecte);
+      } else {
+        if (reponseInput.length !== 1 || !'ABCDE'.includes(reponseInput)) {
+          showAlert(`Question ${index + 1}: Entrez une seule lettre (A, B, C, D ou E)`, 'error');
+          throw new Error('Invalid answer');
+        }
+        question.reponse_correcte = reponseInput;
+      }
+    } else if (questionType === 'qroc') {
+      // QROC - Réponse attendue + variantes
+      const reponseAttendue = form[`reponse_attendue_${index}`]?.value;
+      
+      if (!reponseAttendue) {
+        showAlert(`Question ${index + 1}: Vous devez entrer une réponse attendue`, 'error');
+        throw new Error('Missing answer');
+      }
+      
+      question.reponse_attendue = reponseAttendue;
+      
+      // Ajouter les variantes si présentes
+      const variantes = form[`variantes_${index}`]?.value;
+      if (variantes) {
+        const variantesArray = variantes.split('\n').map(v => v.trim()).filter(v => v);
+        question.reponse_attendue = JSON.stringify({
+          principale: reponseAttendue,
+          variantes: variantesArray
+        });
+      }
+    } else if (questionType === 'qzp') {
+      // QZP - Image + zones cliquables
+      const imageUrl = form[`image_url_${index}`]?.value;
+      const zonesData = form[`zones_data_${index}`]?.value;
+      
+      if (!imageUrl) {
+        showAlert(`Question ${index + 1}: Vous devez uploader une image`, 'error');
+        throw new Error('Missing image');
+      }
+      
+      if (!zonesData || zonesData === '[]') {
+        showAlert(`Question ${index + 1}: Vous devez définir au moins une zone cliquable`, 'error');
+        throw new Error('Missing zones');
+      }
+      
+      question.image_url = imageUrl;
+      question.zones_cliquables = zonesData;
+    }
+    
     formData.questions.push(question);
   });
 
