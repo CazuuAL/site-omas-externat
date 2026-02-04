@@ -165,13 +165,21 @@ async function loadQCMForEdit(qcmId) {
     console.log('📥 Questions:', qcmQuestions);
     
     // Remplir le formulaire avec les données du QCM
-    document.getElementById('titre').value = qcm.titre;
-    document.getElementById('specialite').value = qcm.specialite;
-    document.getElementById('semaine').value = qcm.semaine;
-    document.getElementById('description').value = qcm.description || '';
-    document.getElementById('disponible_debut').value = qcm.disponible_debut;
-    document.getElementById('disponible_fin').value = qcm.disponible_fin;
-    document.getElementById('date_limite').value = qcm.date_limite;
+    const titreInput = document.getElementById('titre');
+    const specialiteSelect = document.getElementById('specialite');
+    const semaineInput = document.getElementById('semaine');
+    const descriptionInput = document.getElementById('description');
+    const disponibleDebutInput = document.getElementById('disponible_debut');
+    const disponibleFinInput = document.getElementById('disponible_fin');
+    const dateLimiteInput = document.getElementById('date_limite');
+    
+    if (titreInput) titreInput.value = qcm.titre;
+    if (specialiteSelect) specialiteSelect.value = qcm.specialite;
+    if (semaineInput) semaineInput.value = qcm.semaine;
+    if (descriptionInput) descriptionInput.value = qcm.description || '';
+    if (disponibleDebutInput) disponibleDebutInput.value = qcm.disponible_debut;
+    if (disponibleFinInput) disponibleFinInput.value = qcm.disponible_fin;
+    if (dateLimiteInput) dateLimiteInput.value = qcm.date_limite;
     
     // Changer le titre et le bouton
     const pageTitle = document.querySelector('h1');
