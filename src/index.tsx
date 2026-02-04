@@ -1249,7 +1249,22 @@ app.get('/dashboard-enseignant', (c) => {
                     <a href="/dashboard-enseignant" class="nav-link">Mes QCM</a>
                     <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
                     <a href="/" class="nav-link">Accueil</a>
-                    <button onclick="handleLogout()" class="btn-connexion">Déconnexion</button>
+                    <div class="profile-menu" id="profile-menu">
+                        <button class="profile-btn" id="profile-btn">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="user-name">Profil</span>
+                            <i class="fas fa-chevron-down" id="chevron-icon"></i>
+                        </button>
+                        <div class="profile-dropdown" id="profile-dropdown">
+                            <a href="/dashboard-enseignant" class="dropdown-item">
+                                <i class="fas fa-chalkboard-teacher"></i> Dashboard
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item" onclick="logout()">
+                                <i class="fas fa-sign-out-alt"></i> Déconnexion
+                            </a>
+                        </div>
+                    </div>
                 </nav>
             </div>
         </header>
@@ -1302,7 +1317,22 @@ app.get('/creer-qcm', (c) => {
                     <a href="/dashboard-enseignant" class="nav-link">Mes QCM</a>
                     <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
                     <a href="/" class="nav-link">Accueil</a>
-                    <button onclick="handleLogout()" class="btn-connexion">Déconnexion</button>
+                    <div class="profile-menu" id="profile-menu">
+                        <button class="profile-btn" id="profile-btn">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="user-name">Profil</span>
+                            <i class="fas fa-chevron-down" id="chevron-icon"></i>
+                        </button>
+                        <div class="profile-dropdown" id="profile-dropdown">
+                            <a href="/dashboard-enseignant" class="dropdown-item">
+                                <i class="fas fa-chalkboard-teacher"></i> Dashboard
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item" onclick="logout()">
+                                <i class="fas fa-sign-out-alt"></i> Déconnexion
+                            </a>
+                        </div>
+                    </div>
                 </nav>
             </div>
         </header>

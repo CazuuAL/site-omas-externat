@@ -17,8 +17,34 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   
-  // Afficher le nom de l'utilisateur
-  document.getElementById('user-name').textContent = `${user.prenom} ${user.nom}`;
+  // Afficher le nom de l'utilisateur dans le menu
+  const userName = document.getElementById('user-name');
+  if (userName) {
+    userName.textContent = `${user.prenom}`;
+  }
+  
+  // Initialiser le menu déroulant
+  const profileBtn = document.getElementById('profile-btn');
+  const profileDropdown = document.getElementById('profile-dropdown');
+  const chevronIcon = document.getElementById('chevron-icon');
+  
+  if (profileBtn && profileDropdown) {
+    profileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileDropdown.classList.toggle('show');
+      if (chevronIcon) {
+        chevronIcon.style.transform = profileDropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
+    });
+    
+    // Fermer au clic à l'extérieur
+    document.addEventListener('click', () => {
+      profileDropdown.classList.remove('show');
+      if (chevronIcon) {
+        chevronIcon.style.transform = 'rotate(0deg)';
+      }
+    });
+  }
   
   // Charger les statistiques
   loadStudentStats(user.id);

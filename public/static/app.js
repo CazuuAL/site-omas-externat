@@ -168,6 +168,13 @@ function checkAuth() {
   return null;
 }
 
+// Fonction de déconnexion
+function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = '/connexion';
+}
+
 // Charger les QCM hebdomadaires
 async function loadQCMList() {
   const container = document.getElementById('qcm-list');
@@ -661,15 +668,10 @@ function updateHeaderForLoggedInUser(user) {
             <i class="fas fa-home"></i>
             <span>Mon espace</span>
           </a>
-          <a href="/mon-profil" class="profile-dropdown-item">
-            <i class="fas fa-user-edit"></i>
-            <span>Mon profil</span>
-          </a>
           <div class="profile-dropdown-divider"></div>
-          <button onclick="handleLogout()" class="profile-dropdown-item">
+          <a href="#" onclick="logout(); return false;" class="profile-dropdown-item">
             <i class="fas fa-sign-out-alt"></i>
             <span>Déconnexion</span>
-          </button>
         </div>
       </div>
     `;
