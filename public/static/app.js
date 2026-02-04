@@ -170,6 +170,33 @@ function checkAuth() {
 
 // Charger les QCM hebdomadaires
 async function loadQCMList() {
+  const container = document.getElementById('qcm-list');
+  if (!container) return;
+  
+  // Vérifier si l'utilisateur est connecté
+  const user = checkAuth();
+  
+  if (!user) {
+    // Afficher un message invitant à se connecter
+    container.innerHTML = `
+      <div style="text-align: center; padding: 4rem 2rem; max-width: 600px; margin: 0 auto;">
+        <div style="font-size: 4rem; color: var(--primary-color); margin-bottom: 1.5rem;">
+          <i class="fas fa-lock"></i>
+        </div>
+        <h2 style="font-size: 1.8rem; color: var(--text-dark); margin-bottom: 1rem;">
+          Connexion requise
+        </h2>
+        <p style="font-size: 1.1rem; color: var(--text-medium); margin-bottom: 2rem;">
+          Vous devez être connecté pour accéder aux QCM hebdomadaires
+        </p>
+        <a href="/connexion" class="btn-primary" style="display: inline-block; text-decoration: none;">
+          <i class="fas fa-sign-in-alt"></i> Se connecter
+        </a>
+      </div>
+    `;
+    return;
+  }
+  
   try {
     const response = await fetch('/api/qcm/list');
     const data = await response.json();
