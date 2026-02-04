@@ -405,6 +405,7 @@ function handleImageUpload(index, event) {
 // Toggle entre mode aperçu et mode dessin de zone
 let canvasMode = {}; // Stocker l'état du mode canvas par index
 let zones = {}; // Stocker les zones par index
+let draggedZone = {}; // Zone en cours de déplacement par index
 
 function toggleCanvasMode(index) {
   const canvas = document.getElementById(`canvas_${index}`);
@@ -438,46 +439,103 @@ function toggleCanvasMode(index) {
     };
     img.src = questionImages[index];
     
-    // Ajouter l'événement de clic pour définir une zone
-    canvas.onclick = function(e) {
+    // Variables pour le drag & drop
+    draggedZone[index] = null;
+    let isDragging = false;
+    
+    // Fonction pour vérifier si un point est dans une zone
+    function getZoneAtPosition(x, y) {
+      for (let i = zones[index].length - 1; i >= 0; i--) {
+        const zone = zones[index][i];
+        const distance = Math.sqrt(Math.pow(x - zone.x, 2) + Math.pow(y - zone.y, 2));
+        if (distance <= zone.radius) {
+          return i;
+        }
+      }
+      return -1;
+    }
+    
+    // Mousedown: détecter si on clique sur une zone ou pas
+    canvas.onmousedown = function(e) {
       const rect = canvas.getBoundingClientRect();
-      
-      // Calculer les coordonnées dans le système de coordonnées du canvas
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      
       const x = (e.clientX - rect.left) * scaleX;
       const y = (e.clientY - rect.top) * scaleY;
       
-      console.log('🖱️ Clic détecté - Position affichée:', e.clientX - rect.left, e.clientY - rect.top);
-      console.log('📐 Taille canvas:', canvas.width, 'x', canvas.height);
-      console.log('📐 Taille affichée:', rect.width, 'x', rect.height);
-      console.log('📊 Ratio:', scaleX, 'x', scaleY);
-      console.log('🎯 Position réelle:', x, y);
+      const zoneIndex = getZoneAtPosition(x, y);
       
-      const zoneName = prompt('Nom de cette zone (ex: "Artère aorte") :');
-      if (!zoneName) return;
+      if (zoneIndex !== -1) {
+        // On clique sur une zone existante → mode drag
+        isDragging = true;
+        draggedZone[index] = zoneIndex;
+        canvas.style.cursor = 'grabbing';
+        console.log('🖱️ Début du déplacement de la zone', zoneIndex + 1);
+      } else {
+        // On clique sur un espace vide → créer une nouvelle zone
+        const zoneName = prompt('Nom de cette zone (ex: "Artère aorte") :');
+        if (!zoneName) return;
+        
+        const zoneRadius = prompt('Rayon de la zone en pixels (défaut: 30) :') || 30;
+        
+        zones[index].push({
+          x: Math.round(x),
+          y: Math.round(y),
+          radius: parseInt(zoneRadius),
+          label: zoneName
+        });
+        
+        document.getElementById(`zones_data_${index}`).value = JSON.stringify(zones[index]);
+        redrawZones(index);
+        updateZonesList(index);
+        console.log('✅ Zone ajoutée:', zones[index][zones[index].length - 1]);
+      }
+    };
+    
+    // Mousemove: déplacer la zone si on est en mode drag
+    canvas.onmousemove = function(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
       
-      const zoneRadius = prompt('Rayon de la zone en pixels (défaut: 30) :') || 30;
-      
-      // Ajouter la zone avec les coordonnées réelles
-      zones[index].push({
-        x: Math.round(x),
-        y: Math.round(y),
-        radius: parseInt(zoneRadius),
-        label: zoneName
-      });
-      
-      // Sauvegarder dans le hidden input
-      document.getElementById(`zones_data_${index}`).value = JSON.stringify(zones[index]);
-      
-      // Redessiner
-      redrawZones(index);
-      
-      // Mettre à jour la liste
-      updateZonesList(index);
-      
-      console.log('✅ Zone ajoutée:', zones[index][zones[index].length - 1]);
+      if (isDragging && draggedZone[index] !== null) {
+        // Déplacer la zone
+        zones[index][draggedZone[index]].x = Math.round(x);
+        zones[index][draggedZone[index]].y = Math.round(y);
+        
+        // Redessiner
+        redrawZones(index);
+      } else {
+        // Changer le curseur si on survole une zone
+        const zoneIndex = getZoneAtPosition(x, y);
+        canvas.style.cursor = zoneIndex !== -1 ? 'grab' : 'crosshair';
+      }
+    };
+    
+    // Mouseup: arrêter le drag
+    canvas.onmouseup = function() {
+      if (isDragging) {
+        isDragging = false;
+        console.log('✅ Zone déplacée:', zones[index][draggedZone[index]]);
+        
+        // Sauvegarder
+        document.getElementById(`zones_data_${index}`).value = JSON.stringify(zones[index]);
+        updateZonesList(index);
+        
+        draggedZone[index] = null;
+        canvas.style.cursor = 'crosshair';
+      }
+    };
+    
+    // Mouseleave: arrêter le drag si on sort du canvas
+    canvas.onmouseleave = function() {
+      if (isDragging) {
+        isDragging = false;
+        draggedZone[index] = null;
+        canvas.style.cursor = 'crosshair';
+      }
     };
   }
 }
@@ -493,17 +551,21 @@ function redrawZones(index) {
     
     // Dessiner toutes les zones
     zones[index].forEach((zone, i) => {
+      const isBeingDragged = draggedZone[index] === i;
+      
       ctx.beginPath();
       ctx.arc(zone.x, zone.y, zone.radius, 0, 2 * Math.PI);
-      ctx.strokeStyle = '#008080';
-      ctx.lineWidth = 3;
+      
+      // Style différent si la zone est en cours de déplacement
+      ctx.strokeStyle = isBeingDragged ? '#FF6B35' : '#008080';
+      ctx.lineWidth = isBeingDragged ? 4 : 3;
       ctx.stroke();
       
-      ctx.fillStyle = 'rgba(0, 128, 128, 0.2)';
+      ctx.fillStyle = isBeingDragged ? 'rgba(255, 107, 53, 0.3)' : 'rgba(0, 128, 128, 0.2)';
       ctx.fill();
       
       // Numéro de la zone
-      ctx.fillStyle = '#008080';
+      ctx.fillStyle = isBeingDragged ? '#FF6B35' : '#008080';
       ctx.font = 'bold 16px Arial';
       ctx.fillText((i + 1).toString(), zone.x - 8, zone.y + 5);
     });
