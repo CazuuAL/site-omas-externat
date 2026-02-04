@@ -1,13 +1,13 @@
 -- Données de test pour l'application OMAS Externat
 
 -- Utilisateurs de test (mot de passe: "password123" hashé - en production, utiliser bcrypt)
-INSERT OR IGNORE INTO users (email, password_hash, nom, prenom) VALUES 
-  ('etudiant1@exemple.fr', 'password123', 'Dupont', 'Marie'),
-  ('etudiant2@exemple.fr', 'password123', 'Martin', 'Pierre'),
-  ('admin@exemple.fr', 'password123', 'Admin', 'Système');
+INSERT OR IGNORE INTO users (email, password_hash, nom, prenom, role) VALUES 
+  ('etudiant1@exemple.fr', 'password123', 'Dupont', 'Marie', 'student'),
+  ('etudiant2@exemple.fr', 'password123', 'Martin', 'Pierre', 'student'),
+  ('enseignant@exemple.fr', 'password123', 'Professeur', 'Bernard', 'teacher');
 
 -- QCM Hebdomadaires de test
-INSERT OR IGNORE INTO qcm_weekly (titre, specialite, semaine, description, disponible_debut, disponible_fin, date_limite) VALUES 
+INSERT OR IGNORE INTO qcm_weekly (titre, specialite, semaine, description, disponible_debut, disponible_fin, date_limite, created_by, is_published) VALUES 
   (
     'Cardiologie - Insuffisance cardiaque',
     'Cardiologie',
@@ -15,7 +15,9 @@ INSERT OR IGNORE INTO qcm_weekly (titre, specialite, semaine, description, dispo
     'QCM sur la prise en charge de l''insuffisance cardiaque chronique',
     '2025-01-27',
     '2025-02-03',
-    '2025-02-03'
+    '2025-02-03',
+    3,
+    1
   ),
   (
     'Pneumologie - BPCO',
@@ -24,7 +26,9 @@ INSERT OR IGNORE INTO qcm_weekly (titre, specialite, semaine, description, dispo
     'Évaluation et traitement de la BPCO',
     '2025-02-03',
     '2025-02-10',
-    '2025-02-10'
+    '2025-02-10',
+    3,
+    1
   ),
   (
     'Neurologie - AVC ischémique',
@@ -33,7 +37,9 @@ INSERT OR IGNORE INTO qcm_weekly (titre, specialite, semaine, description, dispo
     'Prise en charge de l''AVC ischémique à la phase aiguë',
     '2025-02-10',
     '2025-02-17',
-    '2025-02-17'
+    '2025-02-17',
+    3,
+    1
   );
 
 -- Questions pour le QCM de Cardiologie

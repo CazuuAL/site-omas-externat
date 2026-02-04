@@ -21,7 +21,7 @@ app.use('/static/*', serveStatic({ root: './public' }))
 // API - Inscription
 app.post('/api/auth/register', async (c) => {
   try {
-    const { nom, prenom, email, password } = await c.req.json()
+    const { nom, prenom, email, password, role } = await c.req.json()
     const { DB } = c.env
 
     // Validation simple
@@ -32,6 +32,9 @@ app.post('/api/auth/register', async (c) => {
     if (password.length < 6) {
       return c.json({ error: 'Le mot de passe doit contenir au moins 6 caractères' }, 400)
     }
+
+    // Valider le rôle
+    const userRole = role === 'teacher' ? 'teacher' : 'student'
 
     // Vérifier si l'email existe déjà
     const existing = await DB.prepare(
@@ -44,8 +47,8 @@ app.post('/api/auth/register', async (c) => {
 
     // Créer l'utilisateur (en production, utiliser bcrypt pour le hash)
     const result = await DB.prepare(
-      'INSERT INTO users (email, password_hash, nom, prenom) VALUES (?, ?, ?, ?)'
-    ).bind(email, password, nom, prenom).run()
+      'INSERT INTO users (email, password_hash, nom, prenom, role) VALUES (?, ?, ?, ?, ?)'
+    ).bind(email, password, nom, prenom, userRole).run()
 
     return c.json({ 
       message: 'Inscription réussie',
@@ -69,7 +72,7 @@ app.post('/api/auth/login', async (c) => {
 
     // Récupérer l'utilisateur
     const user = await DB.prepare(
-      'SELECT id, email, nom, prenom, password_hash FROM users WHERE email = ?'
+      'SELECT id, email, nom, prenom, password_hash, role FROM users WHERE email = ?'
     ).bind(email).first()
 
     if (!user || user.password_hash !== password) {
@@ -88,7 +91,8 @@ app.post('/api/auth/login', async (c) => {
         id: user.id,
         email: user.email,
         nom: user.nom,
-        prenom: user.prenom
+        prenom: user.prenom,
+        role: user.role
       }
     })
   } catch (error) {
@@ -101,7 +105,7 @@ app.post('/api/auth/login', async (c) => {
 // ROUTES API - QCM
 // ============================================
 
-// API - Liste des QCM hebdomadaires
+// API - Liste des QCM hebdomadaires (pour étudiants - seulement publiés)
 app.get('/api/qcm/list', async (c) => {
   try {
     const { DB } = c.env
@@ -110,6 +114,7 @@ app.get('/api/qcm/list', async (c) => {
       SELECT id, titre, specialite, semaine, description, 
              disponible_debut, disponible_fin, date_limite
       FROM qcm_weekly
+      WHERE is_published = 1
       ORDER BY semaine DESC
     `).all()
 
@@ -206,6 +211,141 @@ app.get('/api/student/:userId/progress', async (c) => {
   } catch (error) {
     console.error('Erreur progression:', error)
     return c.json({ error: 'Erreur lors du chargement de la progression' }, 500)
+  }
+})
+
+// ============================================
+// ROUTES API - ENSEIGNANTS
+// ============================================
+
+// API - Liste des QCM créés par un enseignant
+app.get('/api/teacher/qcm/list/:teacherId', async (c) => {
+  try {
+    const teacherId = c.req.param('teacherId')
+    const { DB } = c.env
+
+    const qcms = await DB.prepare(`
+      SELECT id, titre, specialite, semaine, description, 
+             disponible_debut, disponible_fin, date_limite,
+             is_published, created_at
+      FROM qcm_weekly
+      WHERE created_by = ?
+      ORDER BY created_at DESC
+    `).bind(teacherId).all()
+
+    return c.json({ qcms: qcms.results })
+  } catch (error) {
+    console.error('Erreur chargement QCM enseignant:', error)
+    return c.json({ error: 'Erreur lors du chargement des QCM' }, 500)
+  }
+})
+
+// API - Créer un nouveau QCM
+app.post('/api/teacher/qcm/create', async (c) => {
+  try {
+    const { titre, specialite, semaine, description, disponible_debut, disponible_fin, date_limite, created_by, questions } = await c.req.json()
+    const { DB } = c.env
+
+    // Validation
+    if (!titre || !specialite || !semaine || !created_by || !questions || questions.length === 0) {
+      return c.json({ error: 'Tous les champs sont requis' }, 400)
+    }
+
+    // Créer le QCM
+    const qcmResult = await DB.prepare(`
+      INSERT INTO qcm_weekly (titre, specialite, semaine, description, disponible_debut, disponible_fin, date_limite, created_by, is_published)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
+    `).bind(titre, specialite, semaine, description, disponible_debut, disponible_fin, date_limite, created_by).run()
+
+    const qcmId = qcmResult.meta.last_row_id
+
+    // Créer les questions
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i]
+      await DB.prepare(`
+        INSERT INTO questions (qcm_id, enonce, option_a, option_b, option_c, option_d, option_e, reponse_correcte, explication, ordre)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(qcmId, q.enonce, q.option_a, q.option_b, q.option_c, q.option_d, q.option_e || null, q.reponse_correcte, q.explication, i + 1).run()
+    }
+
+    return c.json({ 
+      message: 'QCM créé avec succès',
+      qcmId: qcmId 
+    }, 201)
+  } catch (error) {
+    console.error('Erreur création QCM:', error)
+    return c.json({ error: 'Erreur lors de la création du QCM' }, 500)
+  }
+})
+
+// API - Publier/dépublier un QCM
+app.post('/api/teacher/qcm/:id/publish', async (c) => {
+  try {
+    const qcmId = c.req.param('id')
+    const { is_published } = await c.req.json()
+    const { DB } = c.env
+
+    await DB.prepare(
+      'UPDATE qcm_weekly SET is_published = ? WHERE id = ?'
+    ).bind(is_published ? 1 : 0, qcmId).run()
+
+    return c.json({ message: 'Statut de publication mis à jour' })
+  } catch (error) {
+    console.error('Erreur publication QCM:', error)
+    return c.json({ error: 'Erreur lors de la mise à jour' }, 500)
+  }
+})
+
+// API - Supprimer un QCM
+app.delete('/api/teacher/qcm/:id', async (c) => {
+  try {
+    const qcmId = c.req.param('id')
+    const { DB } = c.env
+
+    // Supprimer les questions associées (CASCADE devrait le faire automatiquement)
+    await DB.prepare('DELETE FROM questions WHERE qcm_id = ?').bind(qcmId).run()
+    
+    // Supprimer le QCM
+    await DB.prepare('DELETE FROM qcm_weekly WHERE id = ?').bind(qcmId).run()
+
+    return c.json({ message: 'QCM supprimé avec succès' })
+  } catch (error) {
+    console.error('Erreur suppression QCM:', error)
+    return c.json({ error: 'Erreur lors de la suppression' }, 500)
+  }
+})
+
+// API - Modifier un QCM existant
+app.put('/api/teacher/qcm/:id', async (c) => {
+  try {
+    const qcmId = c.req.param('id')
+    const { titre, specialite, semaine, description, disponible_debut, disponible_fin, date_limite, questions } = await c.req.json()
+    const { DB } = c.env
+
+    // Mettre à jour le QCM
+    await DB.prepare(`
+      UPDATE qcm_weekly 
+      SET titre = ?, specialite = ?, semaine = ?, description = ?, 
+          disponible_debut = ?, disponible_fin = ?, date_limite = ?
+      WHERE id = ?
+    `).bind(titre, specialite, semaine, description, disponible_debut, disponible_fin, date_limite, qcmId).run()
+
+    // Supprimer les anciennes questions
+    await DB.prepare('DELETE FROM questions WHERE qcm_id = ?').bind(qcmId).run()
+
+    // Créer les nouvelles questions
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i]
+      await DB.prepare(`
+        INSERT INTO questions (qcm_id, enonce, option_a, option_b, option_c, option_d, option_e, reponse_correcte, explication, ordre)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(qcmId, q.enonce, q.option_a, q.option_b, q.option_c, q.option_d, q.option_e || null, q.reponse_correcte, q.explication, i + 1).run()
+    }
+
+    return c.json({ message: 'QCM modifié avec succès' })
+  } catch (error) {
+    console.error('Erreur modification QCM:', error)
+    return c.json({ error: 'Erreur lors de la modification' }, 500)
   }
 })
 
@@ -425,6 +565,19 @@ app.get('/connexion', (c) => {
 
                 <div id="register-tab" class="tab-content" style="display: none;">
                     <form id="register-form">
+                        <div class="form-group">
+                            <label class="form-label">Je suis :</label>
+                            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="role" value="student" checked style="cursor: pointer;">
+                                    <span>Étudiant</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="role" value="teacher" style="cursor: pointer;">
+                                    <span>Enseignant</span>
+                                </label>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label class="form-label">Nom</label>
                             <input type="text" name="nom" class="form-input" placeholder="Dupont" required>
@@ -847,6 +1000,187 @@ app.get('/qcm/:id', async (c) => {
                 loadQCM(${qcmId});
             });
         </script>
+    </body>
+    </html>
+  `)
+})
+
+// Page Dashboard Enseignant
+app.get('/dashboard-enseignant', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard Enseignant - OMAS Externat</title>
+        <link href="/static/styles.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <header class="header">
+            <div class="header-content">
+                <a href="/" class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="logo-text">OMAS Externat</span>
+                </a>
+                <nav class="nav-menu">
+                    <a href="/dashboard-enseignant" class="nav-link">Mes QCM</a>
+                    <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
+                    <a href="/" class="nav-link">Accueil</a>
+                    <button onclick="handleLogout()" class="btn-connexion">Déconnexion</button>
+                </nav>
+            </div>
+        </header>
+
+        <div class="teacher-dashboard">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Mes QCM</h1>
+                <a href="/creer-qcm" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; width: auto; text-decoration: none;">
+                    <i class="fas fa-plus"></i> Créer un nouveau QCM
+                </a>
+            </div>
+
+            <div id="teacher-qcm-list" class="teacher-qcm-grid">
+                <div style="text-align: center; padding: 3rem; grid-column: 1/-1;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 1rem;">Chargement de vos QCM...</p>
+                </div>
+            </div>
+        </div>
+
+        <script src="/static/app.js"></script>
+        <script src="/static/teacher.js"></script>
+    </body>
+    </html>
+  `)
+})
+
+// Page Création de QCM
+app.get('/creer-qcm', (c) => {
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Créer un QCM - OMAS Externat</title>
+        <link href="/static/styles.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <header class="header">
+            <div class="header-content">
+                <a href="/" class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="logo-text">OMAS Externat</span>
+                </a>
+                <nav class="nav-menu">
+                    <a href="/dashboard-enseignant" class="nav-link">Mes QCM</a>
+                    <a href="/creer-qcm" class="nav-link">Créer un QCM</a>
+                    <a href="/" class="nav-link">Accueil</a>
+                    <button onclick="handleLogout()" class="btn-connexion">Déconnexion</button>
+                </nav>
+            </div>
+        </header>
+
+        <div class="create-qcm-container">
+            <h1 class="dashboard-title" style="margin-bottom: 2rem;">Créer un nouveau QCM</h1>
+
+            <form id="create-qcm-form">
+                <!-- Informations générales -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Informations générales</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Titre du QCM *</label>
+                        <input type="text" name="titre" class="form-input" required
+                          placeholder="Ex: Cardiologie - Insuffisance cardiaque">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Spécialité *</label>
+                            <select name="specialite" class="form-input" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="Cardiologie">Cardiologie</option>
+                                <option value="Pneumologie">Pneumologie</option>
+                                <option value="Neurologie">Neurologie</option>
+                                <option value="Gastro-entérologie">Gastro-entérologie</option>
+                                <option value="Néphrologie">Néphrologie</option>
+                                <option value="Endocrinologie">Endocrinologie</option>
+                                <option value="Hématologie">Hématologie</option>
+                                <option value="Rhumatologie">Rhumatologie</option>
+                                <option value="Dermatologie">Dermatologie</option>
+                                <option value="ORL">ORL</option>
+                                <option value="Ophtalmologie">Ophtalmologie</option>
+                                <option value="Pédiatrie">Pédiatrie</option>
+                                <option value="Gynécologie-Obstétrique">Gynécologie-Obstétrique</option>
+                                <option value="Psychiatrie">Psychiatrie</option>
+                                <option value="Infectiologie">Infectiologie</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Semaine *</label>
+                            <input type="number" name="semaine" class="form-input" min="1" max="52" required
+                              placeholder="1-52">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-input" rows="3"
+                          placeholder="Décrivez brièvement le contenu de ce QCM..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Disponible à partir du *</label>
+                            <input type="date" name="disponible_debut" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Disponible jusqu'au *</label>
+                            <input type="date" name="disponible_fin" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Date limite *</label>
+                            <input type="date" name="date_limite" class="form-input" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Questions -->
+                <div class="form-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 class="form-section-title" style="margin: 0; border: none; padding: 0;">Questions</h3>
+                        <button type="button" id="add-question-btn" class="btn-add-question">
+                            <i class="fas fa-plus"></i> Ajouter une question
+                        </button>
+                    </div>
+
+                    <div id="questions-container"></div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <a href="/dashboard-enseignant" class="btn-cancel">Annuler</a>
+                    <button type="submit" class="btn-primary" style="width: auto;">
+                        <i class="fas fa-save"></i> Créer le QCM
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <script src="/static/app.js"></script>
+        <script src="/static/teacher.js"></script>
     </body>
     </html>
   `)

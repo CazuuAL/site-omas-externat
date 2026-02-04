@@ -50,8 +50,12 @@ async function handleLogin(e) {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
-      // Rediriger vers l'espace étudiant
-      window.location.href = '/espace-etudiant';
+      // Rediriger selon le rôle
+      if (data.user.role === 'teacher') {
+        window.location.href = '/dashboard-enseignant';
+      } else {
+        window.location.href = '/espace-etudiant';
+      }
     } else {
       showAlert(data.error || 'Email ou mot de passe incorrect', 'error');
     }
@@ -74,6 +78,7 @@ async function handleRegister(e) {
   const email = form.email.value;
   const password = form.password.value;
   const confirmPassword = form.confirmPassword.value;
+  const role = form.role.value; // Récupérer le rôle
   const submitBtn = form.querySelector('button[type="submit"]');
   const originalText = submitBtn.textContent;
   
@@ -97,7 +102,7 @@ async function handleRegister(e) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ nom, prenom, email, password })
+      body: JSON.stringify({ nom, prenom, email, password, role })
     });
     
     const data = await response.json();
