@@ -276,6 +276,11 @@ function initFAQ() {
   });
 }
 
+// Variables globales pour le QCM en cours
+let currentQCM = null;
+let currentQuestions = [];
+let userAnswers = {};
+
 // Charger un QCM spécifique avec ses questions
 async function loadQCM(qcmId) {
   try {
@@ -289,6 +294,9 @@ async function loadQCM(qcmId) {
     const data = await response.json();
     
     if (response.ok) {
+      currentQCM = data.qcm;
+      currentQuestions = data.questions;
+      userAnswers = {};
       displayQCM(data.qcm, data.questions);
     } else {
       showAlert(data.error || 'Erreur lors du chargement du QCM', 'error');
@@ -307,68 +315,227 @@ function displayQCM(qcm, questions) {
   let html = `
     <div class="qcm-header-full">
       <h1>${qcm.titre}</h1>
-      <p>${qcm.description}</p>
+      <p>${qcm.description || ''}</p>
       <div class="qcm-meta">
         <span><i class="fas fa-stethoscope"></i> ${qcm.specialite}</span>
         <span><i class="fas fa-question-circle"></i> ${questions.length} questions</span>
       </div>
     </div>
-    <div class="questions-container">
+    <form id="qcm-form" onsubmit="submitQCM(event)">
+      <div class="questions-container">
   `;
   
   questions.forEach((question, index) => {
+    const inputType = question.question_type === 'multiple' ? 'checkbox' : 'radio';
+    const isMultiple = question.question_type === 'multiple';
+    
     html += `
-      <div class="question-card">
+      <div class="question-card" data-question-id="${question.id}">
         <div class="question-header">
           <span class="question-number">Question ${index + 1}</span>
+          ${isMultiple ? '<span class="badge-multiple">Réponses multiples</span>' : ''}
         </div>
         <div class="question-body">
           <p class="question-text">${question.enonce}</p>
           <div class="options">
             <div class="option">
-              <input type="radio" name="question-${question.id}" id="q${question.id}-a" value="A">
+              <input type="${inputType}" name="question-${question.id}" id="q${question.id}-a" value="A" ${isMultiple ? 'class="question-checkbox"' : ''}>
               <label for="q${question.id}-a">A. ${question.option_a}</label>
             </div>
             <div class="option">
-              <input type="radio" name="question-${question.id}" id="q${question.id}-b" value="B">
+              <input type="${inputType}" name="question-${question.id}" id="q${question.id}-b" value="B" ${isMultiple ? 'class="question-checkbox"' : ''}>
               <label for="q${question.id}-b">B. ${question.option_b}</label>
             </div>
             <div class="option">
-              <input type="radio" name="question-${question.id}" id="q${question.id}-c" value="C">
+              <input type="${inputType}" name="question-${question.id}" id="q${question.id}-c" value="C" ${isMultiple ? 'class="question-checkbox"' : ''}>
               <label for="q${question.id}-c">C. ${question.option_c}</label>
             </div>
             <div class="option">
-              <input type="radio" name="question-${question.id}" id="q${question.id}-d" value="D">
+              <input type="${inputType}" name="question-${question.id}" id="q${question.id}-d" value="D" ${isMultiple ? 'class="question-checkbox"' : ''}>
               <label for="q${question.id}-d">D. ${question.option_d}</label>
             </div>
             ${question.option_e ? `
               <div class="option">
-                <input type="radio" name="question-${question.id}" id="q${question.id}-e" value="E">
+                <input type="${inputType}" name="question-${question.id}" id="q${question.id}-e" value="E" ${isMultiple ? 'class="question-checkbox"' : ''}>
                 <label for="q${question.id}-e">E. ${question.option_e}</label>
               </div>
             ` : ''}
           </div>
-          <div class="answer-section" style="display: none;">
-            <div class="correct-answer">
-              <strong>Réponse correcte:</strong> ${question.reponse_correcte}
-            </div>
-            <div class="explanation">
-              <strong>Explication:</strong> ${question.explication}
-            </div>
-          </div>
-          <button class="btn-show-answer" onclick="showAnswer(${question.id})">
-            Voir la correction
-          </button>
         </div>
       </div>
     `;
   });
   
-  html += '</div>';
+  html += `
+      </div>
+      <div style="text-align: center; margin: 2rem 0;">
+        <button type="submit" class="btn-primary" style="width: auto; padding: 1rem 3rem; font-size: 1.1rem;">
+          <i class="fas fa-check-circle"></i> Valider et voir ma note
+        </button>
+      </div>
+    </form>
+  `;
+  
   container.innerHTML = html;
 }
 
-// Afficher la réponse d'une question
+// Soumettre le QCM et calculer la note
+function submitQCM(e) {
+  e.preventDefault();
+  
+  let score = 0;
+  let totalQuestions = currentQuestions.length;
+  let results = [];
+  
+  currentQuestions.forEach((question, index) => {
+    let userAnswer;
+    let isCorrect = false;
+    
+    if (question.question_type === 'multiple') {
+      // Récupérer toutes les réponses cochées
+      const checked = Array.from(document.querySelectorAll(`input[name="question-${question.id}"]:checked`))
+        .map(input => input.value);
+      userAnswer = checked;
+      
+      // Comparer avec les bonnes réponses
+      const correctAnswers = JSON.parse(question.reponses_correctes || '[]');
+      isCorrect = arraysEqual(checked.sort(), correctAnswers.sort());
+    } else {
+      // Réponse unique
+      const selectedInput = document.querySelector(`input[name="question-${question.id}"]:checked`);
+      userAnswer = selectedInput ? selectedInput.value : null;
+      isCorrect = userAnswer === question.reponse_correcte;
+    }
+    
+    if (isCorrect) {
+      score++;
+    }
+    
+    results.push({
+      questionNumber: index + 1,
+      question: question,
+      userAnswer: userAnswer,
+      isCorrect: isCorrect
+    });
+    
+    userAnswers[question.id] = {
+      answer: userAnswer,
+      isCorrect: isCorrect
+    };
+  });
+  
+  // Calculer le pourcentage
+  const percentage = ((score / totalQuestions) * 100).toFixed(1);
+  
+  // Afficher les résultats
+  displayResults(score, totalQuestions, percentage, results);
+}
+
+// Comparer deux tableaux
+function arraysEqual(arr1, arr2) {
+  if (arr1.length !== arr2.length) return false;
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) return false;
+  }
+  return true;
+}
+
+// Afficher les résultats
+function displayResults(score, total, percentage, results) {
+  const container = document.getElementById('qcm-content');
+  if (!container) return;
+  
+  let resultClass = 'result-good';
+  let resultIcon = 'fa-check-circle';
+  let resultMessage = 'Excellent travail !';
+  
+  if (percentage < 50) {
+    resultClass = 'result-poor';
+    resultIcon = 'fa-times-circle';
+    resultMessage = 'Continuez à réviser !';
+  } else if (percentage < 75) {
+    resultClass = 'result-average';
+    resultIcon = 'fa-exclamation-circle';
+    resultMessage = 'Bon travail, encore un effort !';
+  }
+  
+  let html = `
+    <div class="results-container">
+      <div class="results-header ${resultClass}">
+        <div class="results-icon">
+          <i class="fas ${resultIcon}"></i>
+        </div>
+        <h2>Résultats du QCM</h2>
+        <div class="results-score">
+          <div class="score-big">${score}/${total}</div>
+          <div class="score-percentage">${percentage}%</div>
+        </div>
+        <p class="results-message">${resultMessage}</p>
+      </div>
+      
+      <div class="results-details">
+        <h3>Détails par question</h3>
+  `;
+  
+  results.forEach(result => {
+    const statusClass = result.isCorrect ? 'correct' : 'incorrect';
+    const statusIcon = result.isCorrect ? 'fa-check' : 'fa-times';
+    const question = result.question;
+    
+    let correctAnswerText;
+    if (question.question_type === 'multiple') {
+      const correctAnswers = JSON.parse(question.reponses_correctes || '[]');
+      correctAnswerText = correctAnswers.join(', ');
+    } else {
+      correctAnswerText = question.reponse_correcte;
+    }
+    
+    let userAnswerText;
+    if (Array.isArray(result.userAnswer)) {
+      userAnswerText = result.userAnswer.length > 0 ? result.userAnswer.join(', ') : 'Aucune réponse';
+    } else {
+      userAnswerText = result.userAnswer || 'Aucune réponse';
+    }
+    
+    html += `
+      <div class="result-item ${statusClass}">
+        <div class="result-item-header">
+          <span class="result-item-number">Question ${result.questionNumber}</span>
+          <span class="result-item-status">
+            <i class="fas ${statusIcon}"></i>
+            ${result.isCorrect ? 'Correct' : 'Incorrect'}
+          </span>
+        </div>
+        <p class="result-item-question">${question.enonce}</p>
+        <div class="result-item-answers">
+          <p><strong>Votre réponse :</strong> ${userAnswerText}</p>
+          <p><strong>Réponse correcte :</strong> ${correctAnswerText}</p>
+        </div>
+        <div class="result-item-explanation">
+          <strong>Explication :</strong> ${question.explication}
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `
+      </div>
+      
+      <div style="text-align: center; margin: 2rem 0;">
+        <a href="/qcm" class="btn-secondary" style="display: inline-block; text-decoration: none;">
+          <i class="fas fa-arrow-left"></i> Retour aux QCM
+        </a>
+      </div>
+    </div>
+  `;
+  
+  container.innerHTML = html;
+  
+  // Scroll vers le haut
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Afficher la réponse d'une question (ancienne fonction, gardée pour compatibilité)
 function showAnswer(questionId) {
   const questionCard = event.target.closest('.question-card');
   const answerSection = questionCard.querySelector('.answer-section');
@@ -417,8 +584,53 @@ document.addEventListener('DOMContentLoaded', () => {
 // Mettre à jour le header pour un utilisateur connecté
 function updateHeaderForLoggedInUser(user) {
   const connexionBtn = document.querySelector('.btn-connexion');
-  if (connexionBtn) {
-    connexionBtn.textContent = user.prenom;
-    connexionBtn.href = '/espace-etudiant';
+  if (connexionBtn && connexionBtn.parentElement) {
+    // Créer le menu profil
+    const profileHtml = `
+      <div class="profile-container">
+        <button class="btn-connexion" id="profile-btn">
+          <i class="fas fa-user"></i> ${user.prenom}
+        </button>
+        <div class="profile-dropdown" id="profile-dropdown">
+          <div class="profile-dropdown-header">
+            <p>${user.prenom} ${user.nom}</p>
+            <small>${user.role === 'teacher' ? 'Enseignant' : 'Étudiant'}</small>
+          </div>
+          <a href="${user.role === 'teacher' ? '/dashboard-enseignant' : '/espace-etudiant'}" class="profile-dropdown-item">
+            <i class="fas fa-home"></i>
+            <span>Mon espace</span>
+          </a>
+          <a href="/mon-profil" class="profile-dropdown-item">
+            <i class="fas fa-user-edit"></i>
+            <span>Mon profil</span>
+          </a>
+          <div class="profile-dropdown-divider"></div>
+          <button onclick="handleLogout()" class="profile-dropdown-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Déconnexion</span>
+          </button>
+        </div>
+      </div>
+    `;
+    
+    connexionBtn.parentElement.innerHTML = profileHtml;
+    
+    // Gérer le clic sur le bouton profil
+    const profileBtn = document.getElementById('profile-btn');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    
+    if (profileBtn && profileDropdown) {
+      profileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('active');
+      });
+      
+      // Fermer le dropdown en cliquant ailleurs
+      document.addEventListener('click', (e) => {
+        if (!profileDropdown.contains(e.target) && e.target !== profileBtn) {
+          profileDropdown.classList.remove('active');
+        }
+      });
+    }
   }
 }

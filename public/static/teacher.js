@@ -152,14 +152,21 @@ function addQuestion() {
       </button>
     </div>
     <div class="form-group">
+      <label class="form-label">Type de question *</label>
+      <select class="form-input" name="question_type_${questions.length}" onchange="updateAnswerInputs(${questions.length})" required>
+        <option value="single">Réponse unique (radio)</option>
+        <option value="multiple">Réponses multiples (checkbox)</option>
+      </select>
+    </div>
+    <div class="form-group">
       <label class="form-label">Énoncé de la question *</label>
       <textarea class="form-input" name="enonce_${questions.length}" rows="3" required
-        placeholder="Ex: Quel est le traitement de première intention de l'insuffisance cardiaque à fraction d'éjection réduite ?"></textarea>
+        placeholder="Ex: Quels sont les facteurs de risque cardiovasculaire modifiables ?"></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">Réponse A *</label>
       <input type="text" class="form-input" name="option_a_${questions.length}" required
-        placeholder="Ex: Inhibiteur calcique">
+        placeholder="Ex: Hypertension artérielle">
     </div>
     <div class="form-group">
       <label class="form-label">Réponse B *</label>
@@ -177,7 +184,7 @@ function addQuestion() {
       <label class="form-label">Réponse E (optionnelle)</label>
       <input type="text" class="form-input" name="option_e_${questions.length}">
     </div>
-    <div class="form-group">
+    <div class="form-group" id="answer-input-${questions.length}">
       <label class="form-label">Réponse correcte *</label>
       <select class="form-input" name="reponse_correcte_${questions.length}" required>
         <option value="">Sélectionner...</option>
@@ -191,12 +198,64 @@ function addQuestion() {
     <div class="form-group">
       <label class="form-label">Explication de la réponse *</label>
       <textarea class="form-input" name="explication_${questions.length}" rows="3" required
-        placeholder="Expliquez pourquoi cette réponse est correcte..."></textarea>
+        placeholder="Expliquez pourquoi cette/ces réponse(s) est/sont correcte(s)..."></textarea>
     </div>
   `;
 
   document.getElementById('questions-container').appendChild(questionDiv);
   questions.push({});
+}
+
+// Mettre à jour les inputs de réponse selon le type de question
+function updateAnswerInputs(index) {
+  const typeSelect = document.querySelector(`[name="question_type_${index}"]`);
+  const answerContainer = document.getElementById(`answer-input-${index}`);
+  
+  if (!typeSelect || !answerContainer) return;
+  
+  const questionType = typeSelect.value;
+  
+  if (questionType === 'multiple') {
+    // Réponses multiples avec checkboxes
+    answerContainer.innerHTML = `
+      <label class="form-label">Réponses correctes * (plusieurs possibles)</label>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="reponse_correcte_${index}" value="A" style="cursor: pointer;">
+          <span>A</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="reponse_correcte_${index}" value="B" style="cursor: pointer;">
+          <span>B</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="reponse_correcte_${index}" value="C" style="cursor: pointer;">
+          <span>C</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="reponse_correcte_${index}" value="D" style="cursor: pointer;">
+          <span>D</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="reponse_correcte_${index}" value="E" style="cursor: pointer;">
+          <span>E</span>
+        </label>
+      </div>
+    `;
+  } else {
+    // Réponse unique avec select
+    answerContainer.innerHTML = `
+      <label class="form-label">Réponse correcte *</label>
+      <select class="form-input" name="reponse_correcte_${index}" required>
+        <option value="">Sélectionner...</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+        <option value="E">E</option>
+      </select>
+    `;
+  }
 }
 
 function removeQuestion(index) {
@@ -242,14 +301,38 @@ async function handleCreateQCM(e) {
   // Collecter les questions
   const questionItems = document.querySelectorAll('.question-item');
   questionItems.forEach((item, index) => {
+    const questionType = form[`question_type_${index}`].value;
+    let reponseCorrecte;
+    
+    if (questionType === 'multiple') {
+      // Pour réponses multiples, récupérer tous les checkboxes cochés
+      const checkboxes = form.querySelectorAll(`input[name="reponse_correcte_${index}"]:checked`);
+      reponseCorrecte = Array.from(checkboxes).map(cb => cb.value);
+      
+      if (reponseCorrecte.length === 0) {
+        showAlert(`Question ${index + 1}: Vous devez sélectionner au moins une réponse correcte`, 'error');
+        throw new Error('Missing answers');
+      }
+    } else {
+      // Pour réponse unique
+      reponseCorrecte = form[`reponse_correcte_${index}`].value;
+      
+      if (!reponseCorrecte) {
+        showAlert(`Question ${index + 1}: Vous devez sélectionner une réponse correcte`, 'error');
+        throw new Error('Missing answer');
+      }
+    }
+    
     const question = {
+      question_type: questionType,
       enonce: form[`enonce_${index}`].value,
       option_a: form[`option_a_${index}`].value,
       option_b: form[`option_b_${index}`].value,
       option_c: form[`option_c_${index}`].value,
       option_d: form[`option_d_${index}`].value,
       option_e: form[`option_e_${index}`]?.value || null,
-      reponse_correcte: form[`reponse_correcte_${index}`].value,
+      reponse_correcte: questionType === 'single' ? reponseCorrecte : null,
+      reponses_correctes: questionType === 'multiple' ? JSON.stringify(reponseCorrecte) : null,
       explication: form[`explication_${index}`].value
     };
     formData.questions.push(question);

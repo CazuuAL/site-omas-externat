@@ -263,9 +263,9 @@ app.post('/api/teacher/qcm/create', async (c) => {
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i]
       await DB.prepare(`
-        INSERT INTO questions (qcm_id, enonce, option_a, option_b, option_c, option_d, option_e, reponse_correcte, explication, ordre)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(qcmId, q.enonce, q.option_a, q.option_b, q.option_c, q.option_d, q.option_e || null, q.reponse_correcte, q.explication, i + 1).run()
+        INSERT INTO questions (qcm_id, enonce, option_a, option_b, option_c, option_d, option_e, question_type, reponse_correcte, reponses_correctes, explication, ordre)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(qcmId, q.enonce, q.option_a, q.option_b, q.option_c, q.option_d, q.option_e || null, q.question_type || 'single', q.reponse_correcte || null, q.reponses_correctes || null, q.explication, i + 1).run()
     }
 
     return c.json({ 
@@ -337,9 +337,9 @@ app.put('/api/teacher/qcm/:id', async (c) => {
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i]
       await DB.prepare(`
-        INSERT INTO questions (qcm_id, enonce, option_a, option_b, option_c, option_d, option_e, reponse_correcte, explication, ordre)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(qcmId, q.enonce, q.option_a, q.option_b, q.option_c, q.option_d, q.option_e || null, q.reponse_correcte, q.explication, i + 1).run()
+        INSERT INTO questions (qcm_id, enonce, option_a, option_b, option_c, option_d, option_e, question_type, reponse_correcte, reponses_correctes, explication, ordre)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(qcmId, q.enonce, q.option_a, q.option_b, q.option_c, q.option_d, q.option_e || null, q.question_type || 'single', q.reponse_correcte || null, q.reponses_correctes || null, q.explication, i + 1).run()
     }
 
     return c.json({ message: 'QCM modifié avec succès' })
