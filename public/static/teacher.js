@@ -441,15 +441,26 @@ function toggleCanvasMode(index) {
     // Ajouter l'événement de clic pour définir une zone
     canvas.onclick = function(e) {
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      
+      // Calculer les coordonnées dans le système de coordonnées du canvas
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+      
+      console.log('🖱️ Clic détecté - Position affichée:', e.clientX - rect.left, e.clientY - rect.top);
+      console.log('📐 Taille canvas:', canvas.width, 'x', canvas.height);
+      console.log('📐 Taille affichée:', rect.width, 'x', rect.height);
+      console.log('📊 Ratio:', scaleX, 'x', scaleY);
+      console.log('🎯 Position réelle:', x, y);
       
       const zoneName = prompt('Nom de cette zone (ex: "Artère aorte") :');
       if (!zoneName) return;
       
       const zoneRadius = prompt('Rayon de la zone en pixels (défaut: 30) :') || 30;
       
-      // Ajouter la zone
+      // Ajouter la zone avec les coordonnées réelles
       zones[index].push({
         x: Math.round(x),
         y: Math.round(y),
