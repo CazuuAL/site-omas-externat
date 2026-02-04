@@ -324,13 +324,35 @@ app.get('/api/teacher/qcm/list/:teacherId', async (c) => {
 // API - Créer un nouveau QCM
 app.post('/api/teacher/qcm/create', async (c) => {
   try {
-    const { titre, specialite, semaine, description, disponible_debut, disponible_fin, date_limite, created_by, questions } = await c.req.json()
+    const body = await c.req.json()
+    console.log('📝 Données reçues:', JSON.stringify(body, null, 2))
+    
+    const { titre, specialite, semaine, description, disponible_debut, disponible_fin, date_limite, created_by, questions } = body
     const { DB } = c.env
 
-    // Validation
-    if (!titre || !specialite || !semaine || !created_by || !questions || questions.length === 0) {
-      return c.json({ error: 'Tous les champs sont requis' }, 400)
+    // Validation détaillée
+    if (!titre) {
+      console.error('❌ Titre manquant')
+      return c.json({ error: 'Le titre est requis' }, 400)
     }
+    if (!specialite) {
+      console.error('❌ Spécialité manquante')
+      return c.json({ error: 'La spécialité est requise' }, 400)
+    }
+    if (!semaine) {
+      console.error('❌ Semaine manquante')
+      return c.json({ error: 'La semaine est requise' }, 400)
+    }
+    if (!created_by) {
+      console.error('❌ created_by manquant')
+      return c.json({ error: 'L\'identifiant de l\'enseignant est requis' }, 400)
+    }
+    if (!questions || questions.length === 0) {
+      console.error('❌ Questions manquantes ou vides:', questions)
+      return c.json({ error: 'Au moins une question est requise' }, 400)
+    }
+    
+    console.log('✅ Validation OK, nombre de questions:', questions.length)
 
     // Créer le QCM
     const qcmResult = await DB.prepare(`

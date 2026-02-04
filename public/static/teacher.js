@@ -359,6 +359,10 @@ async function handleCreateQCM(e) {
     return;
   }
 
+  console.log('📤 Données à envoyer:', formData);
+  console.log('📊 Nombre de questions:', formData.questions.length);
+  console.log('📋 Questions détaillées:', JSON.stringify(formData.questions, null, 2));
+
   const submitBtn = form.querySelector('button[type="submit"]');
   const originalText = submitBtn.textContent;
   submitBtn.disabled = true;
@@ -373,7 +377,9 @@ async function handleCreateQCM(e) {
       body: JSON.stringify(formData)
     });
 
+    console.log('📥 Réponse serveur - Status:', response.status);
     const data = await response.json();
+    console.log('📥 Réponse serveur - Data:', data);
 
     if (response.ok) {
       showAlert('QCM créé avec succès !', 'success');
