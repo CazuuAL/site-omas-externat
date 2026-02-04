@@ -249,8 +249,11 @@ function addQuestion() {
     <div class="form-group">
       <label class="form-label">Type de question *</label>
       <select class="form-input" name="question_type_${questions.length}" onchange="updateAnswerInputs(${questions.length})" required>
-        <option value="single">Réponse unique (radio)</option>
-        <option value="multiple">Réponses multiples (checkbox)</option>
+        <option value="single">QCU - Réponse unique (radio)</option>
+        <option value="multiple">QCM - Réponses multiples (checkbox)</option>
+        <option value="qrp">QRP - Réponse ouverte courte</option>
+        <option value="qroc">QROC - Question à réponse ouverte courte</option>
+        <option value="qzp">QZP - Zones à pointer (image)</option>
       </select>
     </div>
     <div class="form-group">
@@ -317,7 +320,7 @@ function updateAnswerInputs(index) {
   const questionType = typeSelect.value;
   
   if (questionType === 'multiple') {
-    // Réponses multiples - champ texte avec exemple
+    // QCM - Réponses multiples
     answerContainer.innerHTML = `
       <label class="form-label">Réponses correctes * (plusieurs possibles)</label>
       <input type="text" class="form-input" name="reponse_correcte_${index}" required
@@ -326,8 +329,36 @@ function updateAnswerInputs(index) {
         title="Entrez plusieurs lettres séparées par des virgules (ex: A,C,D)">
       <small class="form-help">Entrez les lettres des réponses correctes séparées par des virgules (ex: A,C ou B,D,E)</small>
     `;
+  } else if (questionType === 'qrp' || questionType === 'qroc') {
+    // QRP/QROC - Réponse ouverte courte
+    answerContainer.innerHTML = `
+      <label class="form-label">Réponse attendue *</label>
+      <input type="text" class="form-input" name="reponse_attendue_${index}" required
+        placeholder="Ex: Hypertension artérielle">
+      <small class="form-help">La réponse de l'étudiant devra correspondre à cette réponse (comparaison exacte ou flexible)</small>
+      <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label">Variantes acceptées (optionnel)</label>
+        <textarea class="form-input" name="variantes_${index}" rows="2"
+          placeholder="Ex: HTA, Hypertension, Pression artérielle élevée (une par ligne)"></textarea>
+        <small class="form-help">Entrez les variantes de réponse acceptées, une par ligne</small>
+      </div>
+    `;
+  } else if (questionType === 'qzp') {
+    // QZP - Zones à pointer sur image
+    answerContainer.innerHTML = `
+      <label class="form-label">URL de l'image *</label>
+      <input type="url" class="form-input" name="image_url_${index}" required
+        placeholder="Ex: https://example.com/image.jpg">
+      <small class="form-help">Entrez l'URL de l'image sur laquelle l'étudiant devra cliquer</small>
+      <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label">Zones cliquables * (JSON)</label>
+        <textarea class="form-input" name="zones_cliquables_${index}" rows="4" required
+          placeholder='[{"x": 100, "y": 150, "width": 50, "height": 50, "label": "Zone 1"}]'></textarea>
+        <small class="form-help">Format JSON: tableau d'objets avec x, y, width, height, label</small>
+      </div>
+    `;
   } else {
-    // Réponse unique - champ texte simple
+    // QCU - Réponse unique
     answerContainer.innerHTML = `
       <label class="form-label">Réponse correcte *</label>
       <input type="text" class="form-input" name="reponse_correcte_${index}" required
