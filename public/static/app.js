@@ -1743,13 +1743,30 @@ function renderQZPInterface(question, disabledAttr = '') {
   
   let zones = [];
   try {
-    zones = JSON.parse(question.zones_cliquables);
+    if (Array.isArray(question.zones_cliquables)) {
+      zones = question.zones_cliquables;
+    } else if (typeof question.zones_cliquables === 'string') {
+      zones = JSON.parse(question.zones_cliquables);
+    } else if (question.zones_cliquables && typeof question.zones_cliquables === 'object') {
+      // Compatibilité avec les payloads déjà désérialisés côté API
+      zones = question.zones_cliquables.zones || [];
+    }
   } catch (error) {
     console.error('Erreur parsing zones QZP:', error);
     return `
       <div class="qzp-error">
         <i class="fas fa-exclamation-triangle"></i>
         Erreur dans la configuration des zones
+      </div>
+    `;
+  }
+
+  if (!Array.isArray(zones)) {
+    console.error('Format inattendu pour les zones QZP:', question.zones_cliquables);
+    return `
+      <div class="qzp-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        Format de zones invalide
       </div>
     `;
   }
