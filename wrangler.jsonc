@@ -1,17 +1,15 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "webapp",
-  "main": "src/index.tsx",
+  "name": "omas-externat",
   "compatibility_date": "2026-02-04",
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": "./dist",
-
-  // Configuration D1 Database pour stocker les utilisateurs et données
+  
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "webapp-production",
-      "database_id": ""
+      "database_name": "omas-externat-production",
+      "database_id": "65d97c47-6fa8-447f-a696-a8e5d254257f"
     }
   ]
 }

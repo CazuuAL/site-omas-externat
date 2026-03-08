@@ -32,7 +32,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // Charger les statistiques de l'étudiant
 async function loadStudentStats(userId) {
   try {
-    const response = await fetch(`/api/student/${userId}/stats`);
+    const token = localStorage.getItem('omas_token');
+    if (!token) {
+      throw new Error('Token d\'authentification manquant');
+    }
+
+    const response = await fetch(`/api/student/${userId}/stats`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     
     if (!response.ok) {
       throw new Error('Erreur lors du chargement des statistiques');
@@ -58,25 +67,36 @@ async function loadStudentStats(userId) {
 // Afficher les statistiques globales
 function displayGlobalStats(stats) {
   if (!stats || stats.length === 0) {
-    document.getElementById('total-qcm').textContent = '0';
+    // Dashboard /dashboard utilise ces IDs
+    document.getElementById('qcm-completed').textContent = '0';
     document.getElementById('avg-score').textContent = '0%';
-    document.getElementById('best-subject').textContent = 'Aucun';
-    document.getElementById('weak-subject').textContent = 'Aucun';
+    document.getElementById('best-score').textContent = '0%';
+    document.getElementById('study-time').textContent = '0h';
     return;
   }
   
   // Total QCM complétés
   const totalQcm = stats.reduce((sum, stat) => sum + stat.nb_qcm_faits, 0);
-  document.getElementById('total-qcm').textContent = totalQcm;
+  const qcmElement = document.getElementById('qcm-completed');
+  if (qcmElement) qcmElement.textContent = totalQcm;
   
   // Score moyen global
   const totalCorrect = stats.reduce((sum, stat) => sum + (stat.total_correct || 0), 0);
   const totalQuestions = stats.reduce((sum, stat) => sum + (stat.total_questions || 0), 0);
   const avgScore = totalQuestions > 0 ? ((totalCorrect / totalQuestions) * 100).toFixed(1) : 0;
-  document.getElementById('avg-score').textContent = avgScore + '%';
+  const avgElement = document.getElementById('avg-score');
+  if (avgElement) avgElement.textContent = avgScore + '%';
   
-  // Meilleure matière et matière à améliorer
-  const sortedByScore = [...stats].sort((a, b) => b.score_moyen - a.score_moyen);
+  // Meilleur score individuel
+  const bestScore = Math.max(...stats.map(stat => stat.score_moyen * 100));
+  const bestElement = document.getElementById('best-score');
+  if (bestElement) bestElement.textContent = bestScore.toFixed(1) + '%';
+  
+  // Temps d'étude approximatif (2 min par question)
+  const studyTime = Math.round((totalQuestions * 2) / 60); // heures
+  const timeElement = document.getElementById('study-time');
+  if (timeElement) timeElement.textContent = studyTime + 'h';
+}
   
   if (sortedByScore.length > 0) {
     document.getElementById('best-subject').textContent = sortedByScore[0].specialite;

@@ -8,14 +8,14 @@ if (!window.headerInitialized) {
   
   // Fonction de déconnexion globale
   window.logout = function() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('omas_token');
+    localStorage.removeItem('omas_user');
     window.location.href = '/connexion';
   };
   
   // Initialiser le nom de l'utilisateur
   function initHeader() {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem('omas_user');
     if (!userStr) return;
     
     const user = JSON.parse(userStr);
