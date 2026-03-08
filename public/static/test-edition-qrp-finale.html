@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Édition QRP - Correction finale</title>
+    <link href="/static/styles.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-left: 4px solid var(--teal-primary);
+            background: #f8f9fa;
+        }
+        .problem-description {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        .solution-description {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        .test-link {
+            display: inline-block;
+            background: var(--teal-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        .test-link:hover {
+            background: var(--teal-dark);
+            transform: translateY(-2px);
+        }
+        .code-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-wrench"></i> Test Édition QRP - Correction finale</h1>
+        <p>Test des corrections apportées au système d'édition QRP</p>
+        
+        <div class="test-section">
+            <h2>🔧 Problème identifié</h2>
+            <div class="problem-description">
+                <h4>Issues QRP dans l'édition</h4>
+                <ul>
+                    <li><strong>Options sans libellés :</strong> Les listes déroulantes affichaient "Type" au lieu des vrais libellés</li>
+                    <li><strong>Pas de pré-sélection :</strong> Les types de correction n'étaient pas pré-sélectionnés lors du chargement d'édition</li>
+                    <li><strong>Données manquantes :</strong> Le champ <code>options_json</code> était null, empêchant le remplissage correct</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>✅ Solutions appliquées</h2>
+            <div class="solution-description">
+                <h4>Corrections JavaScript</h4>
+                <ol>
+                    <li><strong>Option par défaut ajoutée :</strong> 
+                        <div class="code-block">
+&lt;option value=""&gt;-- Type --&lt;/option&gt;
+&lt;option value="vrai"&gt;Vrai&lt;/option&gt;
+&lt;option value="faux"&gt;Faux&lt;/option&gt;
+&lt;option value="indispensable"&gt;Indispensable&lt;/option&gt;
+&lt;option value="inacceptable"&gt;Inacceptable&lt;/option&gt;
+                        </div>
+                    </li>
+                    <li><strong>Fonction fillQRPOptions créée :</strong> Gère le remplissage des options QRP lors de l'édition</li>
+                    <li><strong>Fallback implémenté :</strong> Si options_json est null, utilise les colonnes A-E classiques</li>
+                    <li><strong>IDs ajoutés :</strong> Tous les éléments ont maintenant les IDs nécessaires</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Tests à effectuer</h2>
+            
+            <h3>Test 1 : Édition QCM #5 (QRP incluse)</h3>
+            <p>Tester l'édition de la question QRP "Quels sont les 3 facteurs de risque..."</p>
+            <a href="/creer-qcm?edit=5" class="test-link" target="_blank">
+                <i class="fas fa-edit"></i> Éditer QCM #5
+            </a>
+            
+            <h3>Test 2 : Création nouvelle question QRP</h3>
+            <p>Tester la création d'une nouvelle question QRP avec différents types</p>
+            <a href="/creer-qcm" class="test-link" target="_blank">
+                <i class="fas fa-plus"></i> Créer nouveau QCM
+            </a>
+            
+            <h3>Test 3 : Navigation QH</h3>
+            <p>Vérifier que le bouton QH ne cause plus de déconnexion</p>
+            <a href="/qcm" class="test-link" target="_blank">
+                <i class="fas fa-list"></i> Page QCM (QH)
+            </a>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Résultats attendus</h2>
+            <ul>
+                <li>✅ Les options QRP affichent "-- Type --" par défaut</li>
+                <li>✅ Lors de l'édition, les types de correction sont pré-sélectionnés</li>
+                <li>✅ Tous les textes d'options sont pré-remplis</li>
+                <li>✅ Le bouton QH navigue vers la liste des QCM sans déconnecter</li>
+                <li>✅ Les images QZP s'affichent correctement</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🔗 Liens rapides</h2>
+            <a href="/dashboard-enseignant" class="test-link">
+                <i class="fas fa-tachometer-alt"></i> Dashboard Enseignant
+            </a>
+            <a href="/connexion" class="test-link">
+                <i class="fas fa-sign-in-alt"></i> Connexion
+            </a>
+            <div style="margin-top: 1rem;">
+                <strong>Compte test :</strong> marie.lefebvre@prof.fr / motdepasse123
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 État des corrections</h2>
+            <div id="correction-status">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <span class="status-item completed">✅ Options QRP avec libellés</span>
+                    <span class="status-item completed">✅ Fonction fillQRPOptions</span>
+                    <span class="status-item pending">⚠️ Navigation QH (à vérifier)</span>
+                    <span class="status-item pending">⚠️ Images QZP (à corriger)</span>
+                    <span class="status-item pending">⚠️ Boutons DP (à investiguer)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .status-item {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .status-item.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-item.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-item.blocked {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+
+    <script>
+        // Afficher les informations de déployment
+        console.log('🚀 Test Édition QRP - Version déployée');
+        console.log('📅 Timestamp:', new Date().toISOString());
+        console.log('🔧 Corrections appliquées:');
+        console.log('  - Options par défaut dans generateQRPOptions');
+        console.log('  - Fonction fillQRPOptions pour l\'édition');
+        console.log('  - IDs ajoutés pour tous les éléments');
+        console.log('  - Fallback pour options_json null');
+        
+        // Auto-test de la fonction si elle existe
+        if (typeof generateQRPOptions !== 'undefined') {
+            console.log('✅ generateQRPOptions disponible');
+        } else {
+            console.log('❌ generateQRPOptions non disponible (normal sur cette page)');
+        }
+    </script>
+</body>
+</html>
