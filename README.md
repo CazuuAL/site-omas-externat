@@ -4,15 +4,15 @@
 **OMAS Externat** est une plateforme web dédiée à l'entraînement aux QCM pour les étudiants en médecine, avec un système de dossiers progressifs inspiré de Moodle.
 
 ## 🌐 URLs de Production
-- **Application:** https://9ee83f05.omas-externat.pages.dev
-- **Dossier progressif test:** https://9ee83f05.omas-externat.pages.dev/qcm/5
-- **QCM classique test:** https://9ee83f05.omas-externat.pages.dev/qcm/6
-- **Connexion:** https://9ee83f05.omas-externat.pages.dev/connexion
-- **Documentation:** https://9ee83f05.omas-externat.pages.dev/static/correction-bouton-commencer-final.html
+- **Application:** https://48c3d988.omas-externat.pages.dev
+- **Test Navigation QH:** https://48c3d988.omas-externat.pages.dev/qcm
+- **Test Édition QRP:** https://48c3d988.omas-externat.pages.dev/creer-qcm?edit=2
+- **Connexion:** https://48c3d988.omas-externat.pages.dev/connexion
+- **Documentation Finale:** https://48c3d988.omas-externat.pages.dev/static/resume-final-corrections-qcm.html
+- **Tests QRP:** https://48c3d988.omas-externat.pages.dev/static/test-edition-qrp-finale.html
 
 ## 👥 Comptes de Test
 - **Enseignant:** marie.lefebvre@prof.fr / motdepasse123
-- **Étudiant:** test.inscription.nouveau@student.fr / motdepasse123
 
 ## ✨ Fonctionnalités Complètes
 
@@ -61,7 +61,34 @@
 - **Déploiement:** Cloudflare Pages
 - **Style:** Moodle-compatible CSS
 
-## 🔧 Corrections Récentes
+## 🔧 Corrections Récentes (v1.2.0)
+
+### ✅ Problème Édition QRP - RÉSOLU ✨
+**Issue:** Lors de l'édition, les champs QRP n'étaient pas pré-remplis et les listes déroulantes affichaient "Type" au lieu des vrais libellés.
+
+**Causes identifiées:**
+- Options par défaut manquantes dans `generateQRPOptions()`
+- Fonction `fillQRPOptions()` inexistante pour l'édition
+- IDs manquants pour certains éléments
+- Gestion incorrecte des données `options_json` null
+
+**Solutions appliquées:**
+1. **Ajout option par défaut** dans les selects QRP : `<option value="">-- Type --</option>`
+2. **Création fonction `fillQRPOptions()`** qui :
+   - Parse `options_json` si disponible
+   - Utilise fallback vers colonnes A-E si `options_json` est null  
+   - Pré-remplit automatiquement tous les champs et types
+3. **IDs ajoutés** pour tous les éléments (`question_type`, `enonce`, `explication`, options QRP)
+4. **Intégration** dans `fillQuestionFields()` pour appel automatique
+
+**Tests validés:** ✅ QCM #2 - Édition QRP fonctionne parfaitement
+
+### ✅ Problème Navigation QH - RÉSOLU ✨  
+**Issue:** Le bouton "QH" (QCM Hebdomadaires) causait une déconnexion au lieu de naviguer.
+
+**Solution:** Route `/qcm` stabilisée et fonctionnelle.
+
+**Test validé:** ✅ Navigation vers liste QCM réussie
 
 ### ✅ Problème Bouton "Commencer le dossier" - RÉSOLU
 **Issue:** Clic sur "Commencer le dossier" ne déclenchait aucune action.
@@ -76,7 +103,7 @@
 2. Correction de `startProgressiveQuestions()` pour initialiser le state
 3. Conservation uniquement du nouveau framework `QUESTION_SYSTEM`
 
-### ✅ Édition QCM - RÉSOLU  
+### ✅ Édition QCM Générale - RÉSOLU  
 **Issue:** Lors de l'édition, les champs n'étaient pas pré-remplis avec les données existantes.
 
 **Solution:** Correction de `loadQCMForEdit()` avec accès DOM approprié et parsing JSON robuste.
@@ -157,20 +184,22 @@ pm2 logs --nostream
 
 ## 🧪 Tests et Qualité
 
-### Pages de Test Disponibles
-- [Test système complet](https://9ee83f05.omas-externat.pages.dev/static/test-systeme-complet.html)
-- [Debug dossier progressif](https://9ee83f05.omas-externat.pages.dev/static/debug-ultra-detaille.html)
-- [Test édition QCM](https://9ee83f05.omas-externat.pages.dev/static/test-edition-qcm.html)
+### 🧪 Pages de Test Disponibles
+- [Documentation finale corrections](https://48c3d988.omas-externat.pages.dev/static/resume-final-corrections-qcm.html)
+- [Test édition QRP](https://48c3d988.omas-externat.pages.dev/static/test-edition-qrp-finale.html)
+- [Résolution boutons DP](https://48c3d988.omas-externat.pages.dev/static/resolution-finale-boutons-commencer.html)
 
-### Validation Fonctionnelle
-- ✅ Tous types de questions testés
-- ✅ Mode progressif validé end-to-end
-- ✅ Édition QCM complète fonctionnelle
-- ✅ Interface responsive sur mobile/desktop
-- ✅ Compatibilité navigateurs modernes
+### Validation Fonctionnelle  
+- ✅ **Édition QRP :** Pré-remplissage et sélection types corrects (QCM #2 testé)
+- ✅ **Navigation QH :** Accès liste QCM sans déconnexion
+- ✅ **Boutons DP :** Questions progressives fonctionnelles
+- ✅ **Tous types de questions :** QRU, QRM, QRP, QROC, QZP testés
+- ✅ **Interface responsive :** Mobile/desktop compatible
+- ✅ **Compatibilité navigateurs :** Chrome, Firefox, Safari
 
 ---
 
 **Dernière mise à jour:** 8 mars 2026  
-**Version:** 2.1.0 (Correction bouton "Commencer le dossier")  
-**Statut:** ✅ Production stable
+**Version:** v1.2.0 (Corrections QRP/Navigation/DP)  
+**GitHub:** https://github.com/CazuuAL/site-omas-externat  
+**Statut:** ✅ Production stable avec corrections majeures
