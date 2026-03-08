@@ -97,17 +97,6 @@ function displayGlobalStats(stats) {
   const timeElement = document.getElementById('study-time');
   if (timeElement) timeElement.textContent = studyTime + 'h';
 }
-  
-  if (sortedByScore.length > 0) {
-    document.getElementById('best-subject').textContent = sortedByScore[0].specialite;
-    
-    if (sortedByScore.length > 1) {
-      document.getElementById('weak-subject').textContent = sortedByScore[sortedByScore.length - 1].specialite;
-    } else {
-      document.getElementById('weak-subject').textContent = '-';
-    }
-  }
-}
 
 // Créer le graphique radar
 function createRadarChart(stats) {
